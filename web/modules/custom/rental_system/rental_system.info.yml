@@ -1,0 +1,20 @@
+name: Rental System
+type: module
+description: 'Manages construction materials rental system with products, customers, transactions, and payments.'
+core_version_requirement: ^11 || ^12
+package: Custom
+dependencies:
+  - drupal:node
+  - drupal:field
+  - drupal:user
+  - drupal:views
+  - drupal:datetime
+  - drupal:telephone
+  - drupal:options
+  - drupal:image
+  - drupal:text
+  - drupal:taxonomy
+
+optional_dependencies:
+  - paragraphs
+

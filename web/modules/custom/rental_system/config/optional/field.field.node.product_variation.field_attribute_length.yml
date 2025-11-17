@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_attribute_length
+    - node.type.product_variation
+  module:
+    - field
+id: node.product_variation.field_attribute_length
+field_name: field_attribute_length
+entity_type: node
+bundle: product_variation
+label: 'Length'
+description: 'Product length attribute (e.g., 1 m, 2 m).'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      length: length
+    sort:
+      field: name
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_rental_transaction
+    - node.type.payment_record
+  module:
+    - field
+id: node.payment_record.field_rental_transaction
+field_name: field_rental_transaction
+entity_type: node
+bundle: payment_record
+label: 'Rental Transaction'
+description: 'Rental transaction this payment is for.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      rental_transaction: rental_transaction
+    sort:
+      field: created
+      direction: DESC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

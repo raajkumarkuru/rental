@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+    - field
+id: paragraph.field_variation
+field_name: field_variation
+entity_type: paragraph
+type: entity_reference
+settings:
+  target_type: node
+module: field
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
+

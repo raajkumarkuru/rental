@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_advance_payment
+    - node.type.rental_transaction
+  module:
+    - field
+id: node.rental_transaction.field_advance_payment
+field_name: field_advance_payment
+entity_type: node
+bundle: rental_transaction
+label: 'Advance Payment (₹)'
+description: 'Amount paid in advance at the start of rental.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

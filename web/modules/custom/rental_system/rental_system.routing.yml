@@ -1,0 +1,24 @@
+rental_system.dashboard:
+  path: '/admin/rental'
+  defaults:
+    _controller: '\Drupal\rental_system\Controller\RentalDashboardController::dashboard'
+    _title: 'Rental System Dashboard'
+  requirements:
+    _permission: 'view rental reports'
+
+rental_system.rental_form:
+  path: '/admin/rental/create-rental'
+  defaults:
+    _form: '\Drupal\rental_system\Form\CreateRentalForm'
+    _title: 'Create Rental Transaction'
+  requirements:
+    _permission: 'manage rentals'
+
+rental_system.payment_form:
+  path: '/admin/rental/record-payment'
+  defaults:
+    _form: '\Drupal\rental_system\Form\RecordPaymentForm'
+    _title: 'Record Payment'
+  requirements:
+    _permission: 'manage rentals'
+

@@ -1,0 +1,29 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_user_reference
+    - node.type.customer
+  module:
+    - field
+id: node.customer.field_user_reference
+field_name: field_user_reference
+entity_type: node
+bundle: customer
+label: 'User Account'
+description: 'Link to user account if customer has login access.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles: null
+    sort:
+      field: name
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

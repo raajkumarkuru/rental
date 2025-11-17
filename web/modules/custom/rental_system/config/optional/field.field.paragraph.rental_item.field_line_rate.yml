@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_line_rate
+    - paragraphs_type.rental_item
+  module:
+    - field
+id: paragraph.rental_item.field_line_rate
+field_name: field_line_rate
+entity_type: paragraph
+bundle: rental_item
+label: 'Rate per Day'
+description: 'Rental rate per day for this line item.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

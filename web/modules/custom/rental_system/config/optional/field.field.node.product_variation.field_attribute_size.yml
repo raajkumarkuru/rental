@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_attribute_size
+    - node.type.product_variation
+  module:
+    - field
+id: node.product_variation.field_attribute_size
+field_name: field_attribute_size
+entity_type: node
+bundle: product_variation
+label: 'Size'
+description: 'Product size attribute (e.g., 5 inch, 7 inch).'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      size: size
+    sort:
+      field: name
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

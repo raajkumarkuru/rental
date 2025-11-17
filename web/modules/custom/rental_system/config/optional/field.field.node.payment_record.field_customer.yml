@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_customer
+    - node.type.payment_record
+  module:
+    - field
+id: node.payment_record.field_customer
+field_name: field_customer
+entity_type: node
+bundle: payment_record
+label: 'Customer'
+description: 'Customer who made this payment.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      customer: customer
+    sort:
+      field: title
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

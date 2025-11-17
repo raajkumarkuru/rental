@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_variation
+    - paragraphs_type.rental_item
+  module:
+    - field
+id: paragraph.rental_item.field_variation
+field_name: field_variation
+entity_type: paragraph
+bundle: rental_item
+label: 'Product Variation'
+description: 'The product variation being rented.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      product_variation: product_variation
+    sort:
+      field: title
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference
+

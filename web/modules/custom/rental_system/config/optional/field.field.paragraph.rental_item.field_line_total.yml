@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_line_total
+    - paragraphs_type.rental_item
+  module:
+    - field
+id: paragraph.rental_item.field_line_total
+field_name: field_line_total
+entity_type: paragraph
+bundle: rental_item
+label: 'Line Total'
+description: 'Auto-calculated total for this line item (rate × quantity × days).'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_payment_date
+    - node.type.payment_record
+  module:
+    - datetime
+id: node.payment_record.field_payment_date
+field_name: field_payment_date
+entity_type: node
+bundle: payment_record
+label: 'Payment Date'
+description: 'Date when payment was received.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime
+

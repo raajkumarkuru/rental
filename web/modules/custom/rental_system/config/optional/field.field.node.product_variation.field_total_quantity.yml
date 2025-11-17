@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_total_quantity
+    - node.type.product_variation
+  module:
+    - field
+id: node.product_variation.field_total_quantity
+field_name: field_total_quantity
+entity_type: node
+bundle: product_variation
+label: 'Total Quantity'
+description: 'Total stock available for this variation.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: integer
+

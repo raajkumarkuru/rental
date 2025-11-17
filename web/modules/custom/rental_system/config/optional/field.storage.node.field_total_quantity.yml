@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - field
+id: node.field_total_quantity
+field_name: field_total_quantity
+entity_type: node
+type: integer
+settings:
+  unsigned: true
+module: field
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
+

@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_return_date
+    - node.type.rental_transaction
+  module:
+    - datetime
+id: node.rental_transaction.field_return_date
+field_name: field_return_date
+entity_type: node
+bundle: rental_transaction
+label: 'Return Date'
+description: 'Date when rental items were returned.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: datetime
+

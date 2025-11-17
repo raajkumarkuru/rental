@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - paragraphs
+    - field
+id: paragraph.field_line_rate
+field_name: field_line_rate
+entity_type: paragraph
+type: decimal
+settings:
+  precision: 10
+  scale: 2
+module: field
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false
+

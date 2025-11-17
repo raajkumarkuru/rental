@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_rental_items
+    - node.type.rental_transaction
+  module:
+    - paragraphs
+id: node.rental_transaction.field_rental_items
+field_name: field_rental_items
+entity_type: node
+bundle: rental_transaction
+label: 'Rental Items'
+description: 'Line items for this rental transaction. Each item contains a product variation, quantity, and rate.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: default
+  handler_settings:
+    target_bundles:
+      rental_item: rental_item
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference_revisions
+

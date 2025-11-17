@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Length
+vid: length
+description: 'Product length attributes (e.g., 1 m, 2 m, 3 m).'
+weight: 0
+

@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+    - text
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Payment Record
+type: payment_record
+description: 'Records of payments received for rental transactions.'
+help: 'Create a payment record when a customer makes a payment towards a rental transaction.'
+new_revision: true
+preview_mode: 1
+display_submitted: false
+

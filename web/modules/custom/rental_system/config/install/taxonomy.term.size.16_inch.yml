@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.size
+name: '16 inch'
+vid: size
+weight: 0
+parent: null
+

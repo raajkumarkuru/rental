@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_active
+    - node.type.product_variation
+  module:
+    - field
+id: node.product_variation.field_active
+field_name: field_active
+entity_type: node
+bundle: product_variation
+label: 'Active'
+description: 'Whether this variation is active and available for rental.'
+required: false
+translatable: false
+default_value:
+  - value: true
+default_value_callback: ''
+settings:
+  display_label: true
+field_type: boolean
+

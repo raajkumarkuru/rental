@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_quantity_rented
+    - node.type.rental_transaction
+  module:
+    - field
+id: node.rental_transaction.field_quantity_rented
+field_name: field_quantity_rented
+entity_type: node
+bundle: rental_transaction
+label: 'Quantity Rented'
+description: 'Number of units rented.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

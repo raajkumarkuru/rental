@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_total_outstanding
+    - node.type.customer
+  module:
+    - field
+id: node.customer.field_total_outstanding
+field_name: field_total_outstanding
+entity_type: node
+bundle: customer
+label: 'Total Outstanding'
+description: 'Auto-updated total pending payment amount for this customer.'
+required: false
+translatable: false
+default_value:
+  - value: '0'
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

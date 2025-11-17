@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+    - text
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Product
+type: product
+description: 'Product family (e.g., Supporting Rod). Create variations for specific sizes/lengths.'
+help: 'Create a product family entry. Then create Product Variation nodes for each specific variant (size, length) with its own stock and rental rate.'
+new_revision: true
+preview_mode: 1
+display_submitted: false
+

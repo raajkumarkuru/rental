@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Size
+vid: size
+description: 'Product size attributes (e.g., 5 inch, 7 inch, 10 inch).'
+weight: 0
+

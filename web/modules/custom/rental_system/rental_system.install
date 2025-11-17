@@ -1,0 +1,188 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Rental System module.
+ */
+
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+
+/**
+ * Implements hook_install().
+ */
+function rental_system_install() {
+  // Check if paragraphs module is installed.
+  if (!\Drupal::moduleHandler()->moduleExists('paragraphs')) {
+    \Drupal::messenger()->addWarning(t('The Paragraphs module is required for the Rental System to function fully. Please install it: composer require drupal/paragraphs && drush en paragraphs'));
+  }
+  else {
+    // If paragraphs is installed, ensure the rental_item paragraph type exists.
+    _rental_system_install_paragraph_type();
+    _rental_system_install_paragraph_fields();
+  }
+  
+  // Clear cache to ensure all configurations are loaded.
+  drupal_flush_all_caches();
+}
+
+/**
+ * Installs the rental_item paragraph type if paragraphs is available.
+ */
+function _rental_system_install_paragraph_type() {
+  if (!\Drupal::moduleHandler()->moduleExists('paragraphs')) {
+    return;
+  }
+
+  $paragraph_storage = \Drupal::entityTypeManager()->getStorage('paragraphs_type');
+  
+  // Check if rental_item already exists.
+  $paragraph_type = $paragraph_storage->load('rental_item');
+  if ($paragraph_type) {
+    return;
+  }
+
+  // Create the paragraph type programmatically.
+  $paragraph_type = $paragraph_storage->create([
+    'id' => 'rental_item',
+    'label' => 'Rental Item',
+    'description' => 'A line item in a rental transaction containing a product variation, quantity, and rate.',
+    'locked' => TRUE,
+  ]);
+  
+  $paragraph_type->save();
+}
+
+/**
+ * Installs fields for the rental_item paragraph type.
+ */
+function _rental_system_install_paragraph_fields() {
+  if (!\Drupal::moduleHandler()->moduleExists('paragraphs')) {
+    return;
+  }
+
+  // Field: field_variation (Entity Reference to Product Variation)
+  if (!FieldStorageConfig::loadByName('paragraph', 'field_variation')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_variation',
+      'entity_type' => 'paragraph',
+      'type' => 'entity_reference',
+      'settings' => [
+        'target_type' => 'node',
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('paragraph', 'rental_item', 'field_variation')) {
+    FieldConfig::create([
+      'field_name' => 'field_variation',
+      'entity_type' => 'paragraph',
+      'bundle' => 'rental_item',
+      'label' => 'Product Variation',
+      'description' => 'The product variation being rented.',
+      'required' => TRUE,
+      'settings' => [
+        'handler' => 'default',
+        'handler_settings' => [
+          'target_bundles' => ['product_variation' => 'product_variation'],
+          'sort' => [
+            'field' => 'title',
+            'direction' => 'ASC',
+          ],
+        ],
+      ],
+    ])->save();
+  }
+
+  // Field: field_line_quantity (Integer)
+  if (!FieldStorageConfig::loadByName('paragraph', 'field_line_quantity')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_line_quantity',
+      'entity_type' => 'paragraph',
+      'type' => 'integer',
+      'settings' => [
+        'unsigned' => TRUE,
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('paragraph', 'rental_item', 'field_line_quantity')) {
+    FieldConfig::create([
+      'field_name' => 'field_line_quantity',
+      'entity_type' => 'paragraph',
+      'bundle' => 'rental_item',
+      'label' => 'Quantity',
+      'description' => 'Quantity of this variation being rented.',
+      'required' => TRUE,
+    ])->save();
+  }
+
+  // Field: field_line_rate (Decimal)
+  if (!FieldStorageConfig::loadByName('paragraph', 'field_line_rate')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_line_rate',
+      'entity_type' => 'paragraph',
+      'type' => 'decimal',
+      'settings' => [
+        'precision' => 10,
+        'scale' => 2,
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('paragraph', 'rental_item', 'field_line_rate')) {
+    FieldConfig::create([
+      'field_name' => 'field_line_rate',
+      'entity_type' => 'paragraph',
+      'bundle' => 'rental_item',
+      'label' => 'Rate per Day',
+      'description' => 'Rental rate per day for this line item.',
+      'required' => TRUE,
+    ])->save();
+  }
+
+  // Field: field_line_total (Decimal)
+  if (!FieldStorageConfig::loadByName('paragraph', 'field_line_total')) {
+    FieldStorageConfig::create([
+      'field_name' => 'field_line_total',
+      'entity_type' => 'paragraph',
+      'type' => 'decimal',
+      'settings' => [
+        'precision' => 10,
+        'scale' => 2,
+      ],
+    ])->save();
+  }
+
+  if (!FieldConfig::loadByName('paragraph', 'rental_item', 'field_line_total')) {
+    FieldConfig::create([
+      'field_name' => 'field_line_total',
+      'entity_type' => 'paragraph',
+      'bundle' => 'rental_item',
+      'label' => 'Line Total',
+      'description' => 'Auto-calculated total for this line item (rate × quantity × days).',
+      'required' => FALSE,
+    ])->save();
+  }
+}
+
+/**
+ * Implements hook_modules_installed().
+ */
+function rental_system_modules_installed($modules) {
+  // If paragraphs module was just installed, create the paragraph type and fields.
+  if (in_array('paragraphs', $modules)) {
+    _rental_system_install_paragraph_type();
+    _rental_system_install_paragraph_fields();
+    drupal_flush_all_caches();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function rental_system_uninstall() {
+  // Note: Content types and fields will be removed automatically
+  // when the module is uninstalled via configuration management.
+  // If you need to manually delete content, do it here.
+}

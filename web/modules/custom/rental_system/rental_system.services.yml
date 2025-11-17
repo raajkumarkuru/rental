@@ -1,0 +1,5 @@
+services:
+  rental_system.stock_manager:
+    class: Drupal\rental_system\Service\StockManager
+    arguments: ['@entity_type.manager', '@database', '@logger.factory']
+

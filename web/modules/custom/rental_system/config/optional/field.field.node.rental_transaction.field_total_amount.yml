@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_total_amount
+    - node.type.rental_transaction
+  module:
+    - field
+id: node.rental_transaction.field_total_amount
+field_name: field_total_amount
+entity_type: node
+bundle: rental_transaction
+label: 'Total Amount (₹)'
+description: 'Total rental amount calculated (rate × quantity × duration).'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

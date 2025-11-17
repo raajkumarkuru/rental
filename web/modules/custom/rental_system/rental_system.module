@@ -1,0 +1,287 @@
+<?php
+
+/**
+ * @file
+ * Main module file for Rental System.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+use Drupal\paragraphs\ParagraphInterface;
+
+/**
+ * Implements hook_help().
+ */
+function rental_system_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.rental_system':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Rental System module manages construction materials rental with products, variations, customers, transactions, and payments.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function rental_system_entity_presave(EntityInterface $entity) {
+  // Auto-calculate quantity available for product variations.
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'product_variation') {
+    if ($entity->hasField('field_total_quantity') && $entity->hasField('field_quantity_rented')) {
+      _rental_system_calculate_quantity_available($entity);
+    }
+  }
+
+  // Handle rental transaction creation/updates with atomic stock management.
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'rental_transaction') {
+    if ($entity->hasField('field_rental_items') && $entity->hasField('field_status')) {
+      $status = $entity->get('field_status')->value;
+      
+      // Only process confirmed transactions for stock updates.
+      if ($status === 'confirmed') {
+        _rental_system_process_rental_confirmation($entity);
+      }
+      
+      // Calculate totals from line items.
+      _rental_system_calculate_transaction_totals($entity);
+    }
+  }
+
+  // Handle payment records.
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'payment_record') {
+    if ($entity->hasField('field_transaction') && $entity->hasField('field_amount_paid')) {
+      _rental_system_update_rental_balance($entity);
+      _rental_system_update_customer_outstanding($entity);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function rental_system_entity_update(EntityInterface $entity) {
+  // Handle status changes (e.g., Confirmed -> Returned).
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'rental_transaction') {
+    if ($entity->hasField('field_status') && $entity->hasField('field_rental_items')) {
+      $status = $entity->get('field_status')->value;
+      $original_status = $entity->original->get('field_status')->value ?? 'draft';
+      
+      // When status changes to Returned, release stock.
+      if ($status === 'returned' && $original_status !== 'returned') {
+        _rental_system_process_rental_return($entity);
+      }
+      
+      // When status changes from Draft to Confirmed, reserve stock.
+      if ($status === 'confirmed' && $original_status === 'draft') {
+        _rental_system_process_rental_confirmation($entity);
+      }
+      
+      // When status changes to Cancelled, release stock if it was confirmed.
+      if ($status === 'cancelled' && $original_status === 'confirmed') {
+        _rental_system_process_rental_cancellation($entity);
+      }
+    }
+  }
+}
+
+/**
+ * Calculates quantity available for a product variation.
+ */
+function _rental_system_calculate_quantity_available(NodeInterface $variation) {
+  $stock_manager = \Drupal::service('rental_system.stock_manager');
+  $stock_manager->calculateQuantityAvailable($variation);
+}
+
+/**
+ * Processes rental confirmation with atomic stock updates.
+ */
+function _rental_system_process_rental_confirmation(NodeInterface $transaction) {
+  try {
+    $stock_manager = \Drupal::service('rental_system.stock_manager');
+    $stock_manager->reserveStock($transaction);
+  }
+  catch (\Exception $e) {
+    \Drupal::messenger()->addError($e->getMessage());
+    throw $e;
+  }
+}
+
+/**
+ * Processes rental return - releases stock.
+ */
+function _rental_system_process_rental_return(NodeInterface $transaction) {
+  $stock_manager = \Drupal::service('rental_system.stock_manager');
+  $stock_manager->releaseStock($transaction);
+}
+
+/**
+ * Processes rental cancellation - releases stock if it was confirmed.
+ */
+function _rental_system_process_rental_cancellation(NodeInterface $transaction) {
+  // Same logic as return - release the stock.
+  _rental_system_process_rental_return($transaction);
+}
+
+/**
+ * Calculates transaction totals from line items.
+ */
+function _rental_system_calculate_transaction_totals(NodeInterface $transaction) {
+  if (!$transaction->hasField('field_rental_items') || 
+      !$transaction->hasField('field_start_date') ||
+      !$transaction->hasField('field_end_date')) {
+    return;
+  }
+
+  $items = $transaction->get('field_rental_items')->referencedEntities();
+  if (empty($items)) {
+    return;
+  }
+
+  $start_date = $transaction->get('field_start_date')->value;
+  $end_date = $transaction->get('field_end_date')->value;
+
+  if (!$start_date || !$end_date) {
+    return;
+  }
+
+  // Calculate number of days.
+  $start = new \DateTime($start_date);
+  $end = new \DateTime($end_date);
+  $days = max(1, $start->diff($end)->days + 1);
+
+  $total_amount = 0;
+
+  foreach ($items as $item) {
+    if (!$item->hasField('field_line_quantity') || !$item->hasField('field_line_rate')) {
+      continue;
+    }
+
+    $quantity = $item->get('field_line_quantity')->value ?? 0;
+    $rate = $item->get('field_line_rate')->value ?? 0;
+    
+    // Get rate from variation if not set in line item.
+    if ($rate == 0 && $item->hasField('field_variation')) {
+      $variation = $item->get('field_variation')->entity;
+      if ($variation && $variation->hasField('field_rental_rate')) {
+        $rate = $variation->get('field_rental_rate')->value ?? 0;
+        // Update line item rate.
+        $item->set('field_line_rate', $rate);
+      }
+    }
+
+    $line_total = $rate * $quantity * $days;
+    $total_amount += $line_total;
+
+    // Update line total.
+    if ($item->hasField('field_line_total')) {
+      $item->set('field_line_total', $line_total);
+      $item->save();
+    }
+  }
+
+  // Update transaction total.
+  if ($transaction->hasField('field_total_amount')) {
+    $transaction->set('field_total_amount', $total_amount);
+  }
+
+  // Calculate remaining balance.
+  $advance = $transaction->get('field_advance_payment')->value ?? 0;
+  $remaining = max(0, $total_amount - $advance);
+  
+  if ($transaction->hasField('field_remaining_balance')) {
+    $transaction->set('field_remaining_balance', $remaining);
+  }
+}
+
+/**
+ * Updates rental transaction balance when a payment is recorded.
+ */
+function _rental_system_update_rental_balance(NodeInterface $payment_record) {
+  if (!$payment_record->hasField('field_transaction') || 
+      !$payment_record->hasField('field_amount_paid')) {
+    return;
+  }
+
+  $rental_transaction = $payment_record->get('field_transaction')->entity;
+  if (!$rental_transaction || !$rental_transaction->hasField('field_remaining_balance')) {
+    return;
+  }
+
+  // Recalculate balance from total amount minus advance payment and all payments.
+  $total_amount = $rental_transaction->get('field_total_amount')->value ?? 0;
+  $advance_payment = $rental_transaction->get('field_advance_payment')->value ?? 0;
+  
+  // Get all payment records for this transaction.
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $payment_records = $node_storage->loadByProperties([
+    'type' => 'payment_record',
+    'field_transaction' => $rental_transaction->id(),
+  ]);
+  
+  $total_payments = $advance_payment; // Start with advance payment.
+  foreach ($payment_records as $payment) {
+    $total_payments += $payment->get('field_amount_paid')->value ?? 0;
+  }
+  
+  // Calculate remaining balance.
+  $new_balance = max(0, $total_amount - $total_payments);
+  $rental_transaction->set('field_remaining_balance', $new_balance);
+  $rental_transaction->save();
+}
+
+/**
+ * Updates customer's total outstanding amount.
+ */
+function _rental_system_update_customer_outstanding(NodeInterface $payment_record) {
+  if (!$payment_record->hasField('field_customer')) {
+    return;
+  }
+
+  $customer = $payment_record->get('field_customer')->entity;
+  if (!$customer || !$customer->hasField('field_total_outstanding')) {
+    return;
+  }
+
+  // Get all rental transactions for this customer.
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $transactions = $node_storage->loadByProperties([
+    'type' => 'rental_transaction',
+    'field_customer' => $customer->id(),
+  ]);
+
+  $total_outstanding = 0;
+  foreach ($transactions as $transaction) {
+    if ($transaction->hasField('field_remaining_balance')) {
+      $balance = $transaction->get('field_remaining_balance')->value ?? 0;
+      $total_outstanding += $balance;
+    }
+  }
+
+  $customer->set('field_total_outstanding', $total_outstanding);
+  $customer->save();
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function rental_system_node_access(NodeInterface $node, $op, $account) {
+  // Allow customers to view their own rental transactions and payment records.
+  if ($op === 'view') {
+    if (in_array($node->bundle(), ['rental_transaction', 'payment_record'])) {
+      if ($node->hasField('field_customer')) {
+        $customer = $node->get('field_customer')->entity;
+        // Check if customer has user reference field (optional field).
+        if ($customer && $customer->hasField('field_user_reference')) {
+          $user_reference = $customer->get('field_user_reference')->entity;
+          if ($user_reference && $user_reference->id() == $account->id()) {
+            return \Drupal\Core\Access\AccessResult::allowed();
+          }
+        }
+      }
+    }
+  }
+  return \Drupal\Core\Access\AccessResult::neutral();
+}

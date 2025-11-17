@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_quantity_rented
+    - node.type.product
+  module:
+    - field
+id: node.product.field_quantity_rented
+field_name: field_quantity_rented
+entity_type: node
+bundle: product
+label: 'Quantity Rented'
+description: 'Current quantity of this product that is rented out.'
+required: false
+translatable: false
+default_value:
+  - value: '0'
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

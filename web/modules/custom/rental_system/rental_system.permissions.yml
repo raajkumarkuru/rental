@@ -1,0 +1,20 @@
+administer rental system:
+  title: 'Administer Rental System'
+  description: 'Full control over rental system settings and all content.'
+  restrict access: true
+
+manage rentals:
+  title: 'Manage Rentals'
+  description: 'Create and edit rental transactions and payments.'
+  restrict access: true
+
+view rental reports:
+  title: 'View Rental Reports'
+  description: 'View rental reports and summaries.'
+  restrict access: false
+
+view own rentals:
+  title: 'View Own Rentals'
+  description: 'View own rental history and bills.'
+  restrict access: false
+

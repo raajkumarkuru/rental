@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_address
+    - node.type.customer
+  module:
+    - text
+id: node.customer.field_address
+field_name: field_address
+entity_type: node
+bundle: customer
+label: 'Address'
+description: 'Customer address details.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long
+

@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_payment_amount
+    - node.type.payment_record
+  module:
+    - field
+id: node.payment_record.field_payment_amount
+field_name: field_payment_amount
+entity_type: node
+bundle: payment_record
+label: 'Payment Amount (₹)'
+description: 'Amount of payment received.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

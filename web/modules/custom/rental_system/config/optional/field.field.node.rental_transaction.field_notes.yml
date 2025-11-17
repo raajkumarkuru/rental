@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_notes
+    - node.type.rental_transaction
+  module:
+    - text
+id: node.rental_transaction.field_notes
+field_name: field_notes
+entity_type: node
+bundle: rental_transaction
+label: 'Notes'
+description: 'Additional notes about this rental transaction.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long
+

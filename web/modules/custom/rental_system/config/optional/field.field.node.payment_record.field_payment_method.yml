@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_payment_method
+    - node.type.payment_record
+  module:
+    - options
+id: node.payment_record.field_payment_method
+field_name: field_payment_method
+entity_type: node
+bundle: payment_record
+label: 'Payment Method'
+description: 'Method used for payment.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string
+

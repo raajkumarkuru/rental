@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_rental_rate
+    - node.type.product_variation
+  module:
+    - field
+id: node.product_variation.field_rental_rate
+field_name: field_rental_rate
+entity_type: node
+bundle: product_variation
+label: 'Rental Rate (per day)'
+description: 'Daily rental rate in ₹ (Indian Rupees).'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: decimal
+

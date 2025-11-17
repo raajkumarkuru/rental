@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Category
+vid: category
+description: 'Product categories (e.g., Supporting Rod, Shuttering, Concrete Tools, Transport).'
+weight: 0
+

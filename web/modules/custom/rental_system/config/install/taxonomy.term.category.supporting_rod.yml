@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.category
+name: 'Supporting Rod'
+vid: category
+weight: 0
+parent: null
+

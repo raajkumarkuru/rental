@@ -1,0 +1,49 @@
+rental_system.dashboard:
+  title: 'Rental System'
+  description: 'Manage construction materials rental system'
+  parent: system.admin
+  route_name: rental_system.dashboard
+  weight: 10
+
+rental_system.products:
+  title: 'Products'
+  description: 'Manage products and inventory'
+  parent: rental_system.dashboard
+  route_name: system.admin_content
+  weight: 10
+
+rental_system.customers:
+  title: 'Customers'
+  description: 'Manage customers'
+  parent: rental_system.dashboard
+  route_name: system.admin_content
+  weight: 20
+
+rental_system.rentals:
+  title: 'Rental Transactions'
+  description: 'View rental transactions'
+  parent: rental_system.dashboard
+  route_name: system.admin_content
+  weight: 30
+
+rental_system.payments:
+  title: 'Payment Records'
+  description: 'View payment records'
+  parent: rental_system.dashboard
+  route_name: system.admin_content
+  weight: 40
+
+rental_system.create_rental:
+  title: 'Create Rental'
+  description: 'Create a new rental transaction'
+  parent: rental_system.dashboard
+  route_name: rental_system.rental_form
+  weight: 50
+
+rental_system.record_payment:
+  title: 'Record Payment'
+  description: 'Record a payment for a rental transaction'
+  parent: rental_system.dashboard
+  route_name: rental_system.payment_form
+  weight: 60
+
