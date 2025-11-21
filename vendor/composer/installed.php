@@ -352,6 +352,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'drupal/backup_migrate' => array(
+            'pretty_version' => '5.1.0',
+            'version' => '5.1.0.0',
+            'reference' => '5.1.0',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/backup_migrate',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'drupal/better_exposed_filters' => array(
             'pretty_version' => '7.0.5',
             'version' => '7.0.5.0',

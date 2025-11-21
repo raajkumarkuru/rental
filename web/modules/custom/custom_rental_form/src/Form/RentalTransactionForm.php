@@ -158,31 +158,97 @@ class RentalTransactionForm extends FormBase {
     $form['product_section'] = [
       '#type' => 'fieldset',
       '#title' => 'Select Products',
-      '#description' => 'Choose product variations to rent.',
+      '#description' => 'Search and add product variations to rent.',
     ];
 
-    // Load all product variations.
-    $variations = $this->loadProductVariations();
-    $options = [];
-    foreach ($variations as $variation) {
-      $options[$variation->id()] = $variation->label();
-    }
+    // Autocomplete field for selecting products.
+    $form['product_section']['product_autocomplete'] = [
+      '#type' => 'entity_autocomplete',
+      '#title' => 'Search Products',
+      '#description' => 'Start typing to search for product variations.',
+      '#target_type' => 'node',
+      '#selection_settings' => [
+        'target_bundles' => ['product_variation'],
+      ],
+      '#tags' => FALSE,
+    ];
 
-    if (empty($options)) {
-      $form['product_section']['message'] = [
+    // Add button to add selected product.
+    $form['product_section']['add_product_button'] = [
+      '#type' => 'submit',
+      '#value' => 'Add Product',
+      '#submit' => ['::addProduct'],
+      '#limit_validation_errors' => [['product_section', 'product_autocomplete']],
+      '#ajax' => [
+        'callback' => '::updateSelectedProducts',
+        'wrapper' => 'selected-products-wrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      ],
+    ];
+
+    // Display selected products.
+    $selected_ids = $stored['selected_products'] ?? [];
+    
+    $form['product_section']['selected_products_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'selected-products-wrapper'],
+    ];
+
+    if (!empty($selected_ids)) {
+      $form['product_section']['selected_products_wrapper']['selected_list'] = [
+        '#type' => 'fieldset',
+        '#title' => 'Selected Products',
+      ];
+
+      foreach ($selected_ids as $product_id) {
+        if ($product_id) {
+          $variation = $this->entityTypeManager->getStorage('node')->load($product_id);
+          if ($variation) {
+            $form['product_section']['selected_products_wrapper']['selected_list']['product_' . $product_id] = [
+              '#type' => 'container',
+              '#attributes' => ['style' => 'margin: 10px 0; padding: 10px; background: #f9f9f9; border-left: 3px solid #0066cc;'],
+              [
+                '#type' => 'html_tag',
+                '#tag' => 'strong',
+                '#value' => $variation->label(),
+              ],
+              [
+                '#type' => 'submit',
+                '#value' => 'Remove',
+                '#name' => 'remove_product_' . $product_id,
+                '#submit' => ['::removeProduct'],
+                '#product_id' => $product_id,
+                '#attributes' => ['style' => 'margin-left: 10px;'],
+              ],
+            ];
+          }
+        }
+      }
+
+      // Hidden field to store selected product IDs.
+      $form['product_section']['selected_products'] = [
+        '#type' => 'hidden',
+        '#value' => implode(',', array_filter($selected_ids)),
+      ];
+    } else {
+      $form['product_section']['selected_products_wrapper']['empty_message'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => 'No product variations available. Please create some first.',
+        '#attributes' => ['style' => 'color: #999; font-style: italic;'],
+        '#value' => 'No products selected yet.',
       ];
-      return;
+      $form['product_section']['selected_products'] = [
+        '#type' => 'hidden',
+        '#value' => '',
+      ];
     }
 
-    $form['product_section']['selected_products'] = [
-      '#type' => 'checkboxes',
-      '#title' => 'Product Variations',
-      '#options' => $options,
-      '#default_value' => $stored['selected_products'] ?? [],
-      '#required' => TRUE,
+    // Link to add new product.
+    $form['product_section']['add_new_link'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => '<a href="/node/add/product_variation" target="_blank" style="color: #0066cc; text-decoration: none;">+ Add New Product Variation</a>',
     ];
   }
 
@@ -387,8 +453,19 @@ class RentalTransactionForm extends FormBase {
    * Next step callback.
    */
   public function nextStep(array &$form, FormStateInterface $form_state) {
-    $this->storeStepValues($form, $form_state);
     $step = $form_state->get('step');
+    
+    // Validate step 2 - ensure at least one product is selected.
+    if ($step == 2) {
+      $stored = $form_state->get('stored_values') ?? [];
+      if (empty($stored['selected_products'])) {
+        \Drupal::messenger()->addError('Please select at least one product before proceeding.');
+        $form_state->setRebuild(TRUE);
+        return;
+      }
+    }
+    
+    $this->storeStepValues($form, $form_state);
     $form_state->set('step', $step + 1);
     $form_state->setRebuild(TRUE);
   }
@@ -421,7 +498,13 @@ class RentalTransactionForm extends FormBase {
       $stored['customer_state'] = $values['customer_state'] ?? '';
       $stored['customer_zip'] = $values['customer_zip'] ?? '';
     } elseif ($step == 2) {
-      $stored['selected_products'] = array_filter($values['selected_products']);
+      // Get selected products from the stored values (set via addProduct).
+      // selected_products is already stored during form interaction.
+      // Validate that at least one product is selected.
+      if (empty($stored['selected_products'])) {
+        \Drupal::messenger()->addError('Please select at least one product.');
+        $form_state->setRebuild(TRUE);
+      }
     } elseif ($step == 3) {
       $stored['start_date'] = $values['start_date'] ?? '';
       $stored['end_date'] = $values['end_date'] ?? '';
@@ -505,8 +588,82 @@ class RentalTransactionForm extends FormBase {
       ->condition('type', 'product_variation')
       ->condition('status', 1)
       ->sort('title', 'ASC');
+    $query->accessCheck(TRUE);
     $ids = $query->execute();
     return $storage->loadMultiple($ids);
   }
 
+  /**
+   * Add product callback.
+   */
+  public function addProduct(array &$form, FormStateInterface $form_state) {
+    $product_ref = $form_state->getValue('product_autocomplete');
+    
+    if ($product_ref) {
+      $stored = $form_state->get('stored_values') ?? [];
+      $selected_products = $stored['selected_products'] ?? [];
+      
+      // Add product ID if not already selected.
+      if (!in_array($product_ref, $selected_products)) {
+        $selected_products[] = $product_ref;
+      }
+      
+      $stored['selected_products'] = $selected_products;
+      $form_state->set('stored_values', $stored);
+      
+      // Clear the autocomplete field.
+      $form_state->setValueForElement($form['product_section']['product_autocomplete'], '');
+      
+      // Set rebuild to update the form.
+      $form_state->setRebuild(TRUE);
+      
+      // Show success message.
+      \Drupal::messenger()->addMessage('Product added successfully.');
+    } else {
+      \Drupal::messenger()->addWarning('Please select a product first.');
+    }
+  }
+
+  /**
+   * AJAX callback to update selected products.
+   */
+  public function updateSelectedProducts(array &$form, FormStateInterface $form_state) {
+    return $form['product_section']['selected_products_wrapper'];
+  }
+
+  /**
+   * Remove product callback.
+   */
+  public function removeProduct(array &$form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
+    $product_id_to_remove = NULL;
+    
+    // Extract product ID from button name.
+    if (isset($trigger['#name']) && strpos($trigger['#name'], 'remove_product_') === 0) {
+      $product_id_to_remove = str_replace('remove_product_', '', $trigger['#name']);
+    }
+    
+    if ($product_id_to_remove) {
+      $stored = $form_state->get('stored_values') ?? [];
+      $selected_products = $stored['selected_products'] ?? [];
+      
+      // Remove the product.
+      $selected_products = array_diff($selected_products, [$product_id_to_remove]);
+      $selected_products = array_values($selected_products); // Re-index array.
+      
+      $stored['selected_products'] = $selected_products;
+      
+      // Also remove associated quantity if it exists.
+      if (isset($stored['quantities'])) {
+        unset($stored['quantities']['quantity_' . $product_id_to_remove]);
+      }
+      
+      $form_state->set('stored_values', $stored);
+      $form_state->setRebuild(TRUE);
+      
+      \Drupal::messenger()->addMessage('Product removed successfully.');
+    }
+  }
+
 }
+

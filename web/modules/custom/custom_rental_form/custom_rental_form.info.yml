@@ -1,7 +1,7 @@
 name: Custom Rental Form
 description: Provides a multi-step form for creating rental transactions.
 type: module
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^9 || ^10 || ^11
 dependencies:
   - drupal:node
   - drupal:paragraphs
