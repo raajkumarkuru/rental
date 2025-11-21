@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_customer_email
+    - node.type.customer
+  module:
+    - core
+id: node.customer.field_customer_email
+field_name: field_customer_email
+entity_type: node
+bundle: customer
+label: Email
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: email

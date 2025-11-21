@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - paragraphs
+id: node.field_rental_items
+field_name: field_rental_items
+entity_type: node
+type: entity_reference_revisions
+settings:
+  target_type: paragraph
+module: core
+locked: false
+cardinality: -1
+translatable: false
+indexes: {  }
+persist_with_no_value: false
+custom_storage: false

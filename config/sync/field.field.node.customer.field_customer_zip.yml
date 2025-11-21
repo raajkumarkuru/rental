@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_customer_zip
+    - node.type.customer
+id: node.customer.field_customer_zip
+field_name: field_customer_zip
+entity_type: node
+bundle: customer
+label: Zip/Postal Code
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

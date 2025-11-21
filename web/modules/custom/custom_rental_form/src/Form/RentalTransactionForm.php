@@ -1,0 +1,512 @@
+<?php
+
+namespace Drupal\custom_rental_form\Form;
+
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+/**
+ * Multi-step form for creating rental transactions.
+ */
+class RentalTransactionForm extends FormBase {
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructor.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'rental_transaction_form';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    // Get the current step (default to step 1).
+    $step = $form_state->get('step') ?? 1;
+    $form_state->set('step', $step);
+
+    // Initialize stored values if not already done.
+    if (!$form_state->has('stored_values')) {
+      $form_state->set('stored_values', []);
+    }
+
+    $form['#prefix'] = '<div id="rental-form-wrapper">';
+    $form['#suffix'] = '</div>';
+
+    // Step 1: Customer Information.
+    if ($step == 1) {
+      $this->buildCustomerStep($form, $form_state);
+    }
+    // Step 2: Product Selection.
+    elseif ($step == 2) {
+      $this->buildProductSelectionStep($form, $form_state);
+    }
+    // Step 3: Rental Details.
+    elseif ($step == 3) {
+      $this->buildRentalDetailsStep($form, $form_state);
+    }
+    // Step 4: Review & Submit.
+    elseif ($step == 4) {
+      $this->buildReviewStep($form, $form_state);
+    }
+
+    // Add progress indicator.
+    $form['#prefix'] .= $this->getProgressIndicator($step);
+
+    // Add navigation buttons.
+    $this->addNavigationButtons($form, $form_state, $step);
+
+    return $form;
+  }
+
+  /**
+   * Build customer information step.
+   */
+  private function buildCustomerStep(array &$form, FormStateInterface $form_state) {
+    $stored = $form_state->get('stored_values') ?? [];
+
+    $form['customer_section'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Customer Information',
+      '#description' => 'Enter the customer details for this rental.',
+    ];
+
+    $form['customer_section']['customer_name'] = [
+      '#type' => 'textfield',
+      '#title' => 'Full Name',
+      '#required' => TRUE,
+      '#default_value' => $stored['customer_name'] ?? '',
+    ];
+
+    $form['customer_section']['customer_email'] = [
+      '#type' => 'email',
+      '#title' => 'Email Address',
+      '#required' => TRUE,
+      '#default_value' => $stored['customer_email'] ?? '',
+    ];
+
+    $form['customer_section']['customer_phone'] = [
+      '#type' => 'tel',
+      '#title' => 'Phone Number',
+      '#required' => TRUE,
+      '#default_value' => $stored['customer_phone'] ?? '',
+    ];
+
+    $form['customer_section']['customer_company'] = [
+      '#type' => 'textfield',
+      '#title' => 'Company (Optional)',
+      '#default_value' => $stored['customer_company'] ?? '',
+    ];
+
+    $form['customer_section']['customer_address'] = [
+      '#type' => 'textarea',
+      '#title' => 'Address',
+      '#default_value' => $stored['customer_address'] ?? '',
+    ];
+
+    $form['customer_section']['customer_city'] = [
+      '#type' => 'textfield',
+      '#title' => 'City',
+      '#default_value' => $stored['customer_city'] ?? '',
+    ];
+
+    $form['customer_section']['customer_state'] = [
+      '#type' => 'textfield',
+      '#title' => 'State',
+      '#default_value' => $stored['customer_state'] ?? '',
+    ];
+
+    $form['customer_section']['customer_zip'] = [
+      '#type' => 'textfield',
+      '#title' => 'Zip/Postal Code',
+      '#default_value' => $stored['customer_zip'] ?? '',
+    ];
+  }
+
+  /**
+   * Build product selection step.
+   */
+  private function buildProductSelectionStep(array &$form, FormStateInterface $form_state) {
+    $stored = $form_state->get('stored_values') ?? [];
+
+    $form['product_section'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Select Products',
+      '#description' => 'Choose product variations to rent.',
+    ];
+
+    // Load all product variations.
+    $variations = $this->loadProductVariations();
+    $options = [];
+    foreach ($variations as $variation) {
+      $options[$variation->id()] = $variation->label();
+    }
+
+    if (empty($options)) {
+      $form['product_section']['message'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => 'No product variations available. Please create some first.',
+      ];
+      return;
+    }
+
+    $form['product_section']['selected_products'] = [
+      '#type' => 'checkboxes',
+      '#title' => 'Product Variations',
+      '#options' => $options,
+      '#default_value' => $stored['selected_products'] ?? [],
+      '#required' => TRUE,
+    ];
+  }
+
+  /**
+   * Build rental details step.
+   */
+  private function buildRentalDetailsStep(array &$form, FormStateInterface $form_state) {
+    $stored = $form_state->get('stored_values') ?? [];
+    $selected_products = $stored['selected_products'] ?? [];
+
+    $form['rental_section'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Rental Details',
+      '#description' => 'Specify rental dates and quantities.',
+    ];
+
+    $form['rental_section']['start_date'] = [
+      '#type' => 'datetime',
+      '#title' => 'Rental Start Date',
+      '#required' => TRUE,
+      '#default_value' => isset($stored['start_date']) ? new \DateTime($stored['start_date']) : NULL,
+    ];
+
+    $form['rental_section']['end_date'] = [
+      '#type' => 'datetime',
+      '#title' => 'Rental End Date',
+      '#required' => TRUE,
+      '#default_value' => isset($stored['end_date']) ? new \DateTime($stored['end_date']) : NULL,
+    ];
+
+    if (!empty($selected_products)) {
+      $form['rental_section']['quantities'] = [
+        '#type' => 'fieldset',
+        '#title' => 'Quantities per Product',
+      ];
+
+      foreach ($selected_products as $product_id) {
+        if ($product_id) {
+          $variation = $this->entityTypeManager->getStorage('node')->load($product_id);
+          if ($variation) {
+            $form['rental_section']['quantities']['quantity_' . $product_id] = [
+              '#type' => 'number',
+              '#title' => $variation->label() . ' - Quantity',
+              '#min' => 1,
+              '#required' => TRUE,
+              '#default_value' => $stored['quantities']['quantity_' . $product_id] ?? 1,
+            ];
+          }
+        }
+      }
+    }
+
+    $form['rental_section']['notes'] = [
+      '#type' => 'textarea',
+      '#title' => 'Rental Notes (Optional)',
+      '#default_value' => $stored['notes'] ?? '',
+    ];
+  }
+
+  /**
+   * Build review step.
+   */
+  private function buildReviewStep(array &$form, FormStateInterface $form_state) {
+    $stored = $form_state->get('stored_values') ?? [];
+
+    $form['review_section'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Review Your Rental',
+      '#description' => 'Please review all information before submitting.',
+    ];
+
+    // Customer Summary.
+    $form['review_section']['customer_info'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Customer Information',
+    ];
+
+    $customer_summary = sprintf(
+      '<strong>%s</strong><br/>Email: %s<br/>Phone: %s<br/>Company: %s<br/>Address: %s, %s, %s %s',
+      $stored['customer_name'] ?? '',
+      $stored['customer_email'] ?? '',
+      $stored['customer_phone'] ?? '',
+      $stored['customer_company'] ?? '',
+      $stored['customer_address'] ?? '',
+      $stored['customer_city'] ?? '',
+      $stored['customer_state'] ?? '',
+      $stored['customer_zip'] ?? ''
+    );
+
+    $form['review_section']['customer_info']['summary'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $customer_summary,
+    ];
+
+    // Products Summary.
+    $form['review_section']['products_info'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Rental Items',
+    ];
+
+    $selected_products = $stored['selected_products'] ?? [];
+    $product_summary = '<ul>';
+    foreach ($selected_products as $product_id) {
+      if ($product_id) {
+        $variation = $this->entityTypeManager->getStorage('node')->load($product_id);
+        if ($variation) {
+          $qty = $stored['quantities']['quantity_' . $product_id] ?? 1;
+          $product_summary .= sprintf('<li>%s - Qty: %d</li>', $variation->label(), $qty);
+        }
+      }
+    }
+    $product_summary .= '</ul>';
+
+    $form['review_section']['products_info']['summary'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $product_summary,
+    ];
+
+    // Dates Summary.
+    $form['review_section']['dates_info'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Rental Period',
+    ];
+
+    $dates_summary = sprintf(
+      'Start: %s<br/>End: %s<br/>Notes: %s',
+      $stored['start_date'] ?? '',
+      $stored['end_date'] ?? '',
+      $stored['notes'] ?? 'None'
+    );
+
+    $form['review_section']['dates_info']['summary'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $dates_summary,
+    ];
+
+    // Confirmation checkbox.
+    $form['review_section']['confirm'] = [
+      '#type' => 'checkbox',
+      '#title' => 'I confirm all information is correct and wish to create this rental transaction.',
+      '#required' => TRUE,
+    ];
+  }
+
+  /**
+   * Get progress indicator HTML.
+   */
+  private function getProgressIndicator($step) {
+    $steps = ['Customer Info', 'Product Selection', 'Rental Details', 'Review'];
+    $html = '<div style="margin-bottom: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px;">';
+    $html .= '<strong>Step ' . $step . ' of ' . count($steps) . ':</strong> ';
+    foreach ($steps as $i => $label) {
+      $num = $i + 1;
+      if ($num == $step) {
+        $html .= '<span style="font-weight: bold; color: #0066cc;">' . $label . '</span>';
+      } elseif ($num < $step) {
+        $html .= '<span style="color: #666; text-decoration: line-through;">' . $label . '</span>';
+      } else {
+        $html .= '<span style="color: #999;">' . $label . '</span>';
+      }
+      if ($i < count($steps) - 1) {
+        $html .= ' > ';
+      }
+    }
+    $html .= '</div>';
+    return $html;
+  }
+
+  /**
+   * Add navigation buttons.
+   */
+  private function addNavigationButtons(array &$form, FormStateInterface $form_state, $step) {
+    $form['actions'] = ['#type' => 'actions'];
+
+    if ($step > 1) {
+      $form['actions']['previous'] = [
+        '#type' => 'submit',
+        '#value' => 'Previous',
+        '#submit' => ['::previousStep'],
+        '#limit_validation_errors' => [],
+      ];
+    }
+
+    if ($step < 4) {
+      $form['actions']['next'] = [
+        '#type' => 'submit',
+        '#value' => 'Next',
+        '#submit' => ['::nextStep'],
+      ];
+    } else {
+      $form['actions']['submit'] = [
+        '#type' => 'submit',
+        '#value' => 'Create Rental Transaction',
+      ];
+    }
+  }
+
+  /**
+   * Next step callback.
+   */
+  public function nextStep(array &$form, FormStateInterface $form_state) {
+    $this->storeStepValues($form, $form_state);
+    $step = $form_state->get('step');
+    $form_state->set('step', $step + 1);
+    $form_state->setRebuild(TRUE);
+  }
+
+  /**
+   * Previous step callback.
+   */
+  public function previousStep(array &$form, FormStateInterface $form_state) {
+    $step = $form_state->get('step');
+    $form_state->set('step', $step - 1);
+    $form_state->setRebuild(TRUE);
+  }
+
+  /**
+   * Store step values.
+   */
+  private function storeStepValues(array &$form, FormStateInterface $form_state) {
+    $step = $form_state->get('step');
+    $stored = $form_state->get('stored_values') ?? [];
+
+    $values = $form_state->getValues();
+
+    if ($step == 1) {
+      $stored['customer_name'] = $values['customer_name'] ?? '';
+      $stored['customer_email'] = $values['customer_email'] ?? '';
+      $stored['customer_phone'] = $values['customer_phone'] ?? '';
+      $stored['customer_company'] = $values['customer_company'] ?? '';
+      $stored['customer_address'] = $values['customer_address'] ?? '';
+      $stored['customer_city'] = $values['customer_city'] ?? '';
+      $stored['customer_state'] = $values['customer_state'] ?? '';
+      $stored['customer_zip'] = $values['customer_zip'] ?? '';
+    } elseif ($step == 2) {
+      $stored['selected_products'] = array_filter($values['selected_products']);
+    } elseif ($step == 3) {
+      $stored['start_date'] = $values['start_date'] ?? '';
+      $stored['end_date'] = $values['end_date'] ?? '';
+      $stored['quantities'] = [];
+      foreach ($values as $key => $value) {
+        if (strpos($key, 'quantity_') === 0) {
+          $stored['quantities'][$key] = $value;
+        }
+      }
+      $stored['notes'] = $values['notes'] ?? '';
+    }
+
+    $form_state->set('stored_values', $stored);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $this->storeStepValues($form, $form_state);
+    $stored = $form_state->get('stored_values') ?? [];
+
+    // Create Customer node.
+    $customer_node = Node::create([
+      'type' => 'customer',
+      'title' => $stored['customer_name'] ?? 'Unknown',
+      'field_customer_email' => $stored['customer_email'] ?? '',
+      'field_customer_phone' => $stored['customer_phone'] ?? '',
+      'field_customer_company' => $stored['customer_company'] ?? '',
+      'field_customer_address' => $stored['customer_address'] ?? '',
+      'field_customer_city' => $stored['customer_city'] ?? '',
+      'field_customer_state' => $stored['customer_state'] ?? '',
+      'field_customer_zip' => $stored['customer_zip'] ?? '',
+      'status' => 1,
+    ]);
+    $customer_node->save();
+
+    // Create Rental Transaction node.
+    $rental_node = Node::create([
+      'type' => 'rental_transaction',
+      'title' => 'Rental - ' . ($stored['customer_name'] ?? 'Unknown') . ' - ' . date('Y-m-d H:i'),
+      'field_customer' => ['target_id' => $customer_node->id()],
+      'field_start_date' => $stored['start_date'] ?? '',
+      'field_end_date' => $stored['end_date'] ?? '',
+      'field_notes' => $stored['notes'] ?? '',
+      'field_status' => 'draft',
+      'status' => 1,
+    ]);
+
+    // Create rental item paragraphs for selected products.
+    $selected_products = $stored['selected_products'] ?? [];
+    $paragraphs = [];
+    foreach ($selected_products as $product_id) {
+      if ($product_id) {
+        $qty = $stored['quantities']['quantity_' . $product_id] ?? 1;
+        $paragraph = \Drupal\paragraphs\Entity\Paragraph::create([
+          'type' => 'rental_item',
+          'field_variation' => ['target_id' => $product_id],
+          'field_quantity' => $qty,
+        ]);
+        $paragraphs[] = $paragraph;
+      }
+    }
+
+    if (!empty($paragraphs)) {
+      $rental_node->field_rental_items = $paragraphs;
+    }
+
+    $rental_node->save();
+
+    $form_state->setRedirect('entity.node.canonical', ['node' => $rental_node->id()]);
+    \Drupal::messenger()->addMessage('Rental transaction created successfully!');
+  }
+
+  /**
+   * Load all product variations.
+   */
+  private function loadProductVariations() {
+    $storage = $this->entityTypeManager->getStorage('node');
+    $query = $storage->getQuery()
+      ->condition('type', 'product_variation')
+      ->condition('status', 1)
+      ->sort('title', 'ASC');
+    $ids = $query->execute();
+    return $storage->loadMultiple($ids);
+  }
+
+}

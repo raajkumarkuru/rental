@@ -1,0 +1,7 @@
+custom_rental_form.routing:
+  path: '/rent-property'
+  defaults:
+    _form: '\Drupal\custom_rental_form\Form\RentalTransactionForm'
+    _title: 'Create Rental Transaction'
+  requirements:
+    _permission: 'access content'
