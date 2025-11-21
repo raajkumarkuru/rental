@@ -505,18 +505,21 @@ class RentalTransactionForm extends FormBase {
     
     if ($step == 1) {
       // Validate customer info fields
-      $name = $form_state->getValue('customer_name');
-      $email = $form_state->getValue('customer_email');
-      $phone = $form_state->getValue('customer_phone');
+      $values = $form_state->getValues();
+      $customer_data = $values['customer_section'] ?? [];
+      
+      $name = $customer_data['customer_name'] ?? '';
+      $email = $customer_data['customer_email'] ?? '';
+      $phone = $customer_data['customer_phone'] ?? '';
       
       if (empty($name)) {
-        $form_state->setErrorByName('customer_name', 'Customer name is required.');
+        $form_state->setErrorByName('customer_section][customer_name', 'Customer name is required.');
       }
       if (empty($email)) {
-        $form_state->setErrorByName('customer_email', 'Email address is required.');
+        $form_state->setErrorByName('customer_section][customer_email', 'Email address is required.');
       }
       if (empty($phone)) {
-        $form_state->setErrorByName('customer_phone', 'Phone number is required.');
+        $form_state->setErrorByName('customer_section][customer_phone', 'Phone number is required.');
       }
     } elseif ($step == 2) {
       // Validate that at least one product is selected
@@ -527,14 +530,17 @@ class RentalTransactionForm extends FormBase {
       }
     } elseif ($step == 3) {
       // Validate rental details
-      $start_date = $form_state->getValue('start_date');
-      $end_date = $form_state->getValue('end_date');
+      $values = $form_state->getValues();
+      $rental_data = $values['rental_section'] ?? [];
+      
+      $start_date = $rental_data['start_date'] ?? '';
+      $end_date = $rental_data['end_date'] ?? '';
       
       if (empty($start_date)) {
-        $form_state->setErrorByName('start_date', 'Start date is required.');
+        $form_state->setErrorByName('rental_section][start_date', 'Start date is required.');
       }
       if (empty($end_date)) {
-        $form_state->setErrorByName('end_date', 'End date is required.');
+        $form_state->setErrorByName('rental_section][end_date', 'End date is required.');
       }
     }
   }
@@ -570,29 +576,36 @@ class RentalTransactionForm extends FormBase {
 
     if ($step == 1) {
       // Store customer information from step 1
-      $stored['customer_name'] = $values['customer_section']['customer_name'] ?? '';
-      $stored['customer_email'] = $values['customer_section']['customer_email'] ?? '';
-      $stored['customer_phone'] = $values['customer_section']['customer_phone'] ?? '';
-      $stored['customer_company'] = $values['customer_section']['customer_company'] ?? '';
-      $stored['customer_address'] = $values['customer_section']['customer_address'] ?? '';
-      $stored['customer_city'] = $values['customer_section']['customer_city'] ?? '';
-      $stored['customer_state'] = $values['customer_section']['customer_state'] ?? '';
-      $stored['customer_zip'] = $values['customer_section']['customer_zip'] ?? '';
+      // Values from fieldsets are returned with parent key
+      if (isset($values['customer_section'])) {
+        $customer_data = $values['customer_section'];
+        $stored['customer_name'] = $customer_data['customer_name'] ?? '';
+        $stored['customer_email'] = $customer_data['customer_email'] ?? '';
+        $stored['customer_phone'] = $customer_data['customer_phone'] ?? '';
+        $stored['customer_company'] = $customer_data['customer_company'] ?? '';
+        $stored['customer_address'] = $customer_data['customer_address'] ?? '';
+        $stored['customer_city'] = $customer_data['customer_city'] ?? '';
+        $stored['customer_state'] = $customer_data['customer_state'] ?? '';
+        $stored['customer_zip'] = $customer_data['customer_zip'] ?? '';
+      }
     } elseif ($step == 2) {
       // Step 2: selected_products are already stored via addProduct callback
       // No additional values to store from form submission
     } elseif ($step == 3) {
       // Store rental details from step 3
-      $stored['start_date'] = $values['rental_section']['start_date'] ?? '';
-      $stored['end_date'] = $values['rental_section']['end_date'] ?? '';
-      $stored['quantities'] = [];
-      $stored['notes'] = $values['rental_section']['notes'] ?? '';
-      
-      // Extract quantities from rental_section
-      if (isset($values['rental_section']['quantities_wrapper']['quantities'])) {
-        foreach ($values['rental_section']['quantities_wrapper']['quantities'] as $key => $value) {
-          if (strpos($key, 'quantity_') === 0) {
-            $stored['quantities'][$key] = $value;
+      if (isset($values['rental_section'])) {
+        $rental_data = $values['rental_section'];
+        $stored['start_date'] = $rental_data['start_date'] ?? '';
+        $stored['end_date'] = $rental_data['end_date'] ?? '';
+        $stored['notes'] = $rental_data['notes'] ?? '';
+        $stored['quantities'] = [];
+        
+        // Extract quantities from nested structure
+        if (isset($rental_data['quantities_wrapper']['quantities'])) {
+          foreach ($rental_data['quantities_wrapper']['quantities'] as $key => $value) {
+            if (strpos($key, 'quantity_') === 0) {
+              $stored['quantities'][$key] = $value;
+            }
           }
         }
       }
