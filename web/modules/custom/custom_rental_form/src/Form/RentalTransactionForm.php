@@ -173,19 +173,23 @@ class RentalTransactionForm extends FormBase {
       '#tags' => FALSE,
     ];
 
-    // Add button to add selected product.
+    // Add button to add selected product with AJAX.
     $form['product_section']['add_product_button'] = [
       '#type' => 'submit',
       '#value' => 'Add Product',
       '#submit' => ['::addProduct'],
       '#limit_validation_errors' => [['product_section', 'product_autocomplete']],
       '#ajax' => [
-        'callback' => '::updateSelectedProducts',
-        'wrapper' => 'selected-products-wrapper',
+        'callback' => '::updateProductSection',
+        'wrapper' => 'product-section-wrapper',
         'method' => 'replace',
         'effect' => 'fade',
       ],
     ];
+
+    // Wrap the product section in AJAX container.
+    $form['product_section']['#prefix'] = '<div id="product-section-wrapper">';
+    $form['product_section']['#suffix'] = '</div>';
 
     // Display selected products.
     $selected_ids = $stored['selected_products'] ?? [];
@@ -208,19 +212,27 @@ class RentalTransactionForm extends FormBase {
             $form['product_section']['selected_products_wrapper']['selected_list']['product_' . $product_id] = [
               '#type' => 'container',
               '#attributes' => ['style' => 'margin: 10px 0; padding: 10px; background: #f9f9f9; border-left: 3px solid #0066cc;'],
-              [
-                '#type' => 'html_tag',
-                '#tag' => 'strong',
-                '#value' => $variation->label(),
+            ];
+
+            $form['product_section']['selected_products_wrapper']['selected_list']['product_' . $product_id]['name'] = [
+              '#type' => 'html_tag',
+              '#tag' => 'strong',
+              '#value' => $variation->label(),
+            ];
+
+            $form['product_section']['selected_products_wrapper']['selected_list']['product_' . $product_id]['remove_btn'] = [
+              '#type' => 'submit',
+              '#value' => 'Remove',
+              '#name' => 'remove_product_' . $product_id,
+              '#submit' => ['::removeProduct'],
+              '#product_id' => $product_id,
+              '#ajax' => [
+                'callback' => '::updateProductSection',
+                'wrapper' => 'product-section-wrapper',
+                'method' => 'replace',
+                'effect' => 'fade',
               ],
-              [
-                '#type' => 'submit',
-                '#value' => 'Remove',
-                '#name' => 'remove_product_' . $product_id,
-                '#submit' => ['::removeProduct'],
-                '#product_id' => $product_id,
-                '#attributes' => ['style' => 'margin-left: 10px;'],
-              ],
+              '#attributes' => ['style' => 'margin-left: 10px;'],
             ];
           }
         }
@@ -279,8 +291,14 @@ class RentalTransactionForm extends FormBase {
       '#default_value' => isset($stored['end_date']) ? new \DateTime($stored['end_date']) : NULL,
     ];
 
+    // Wrap quantities in AJAX container.
+    $form['rental_section']['quantities_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'rental-quantities-wrapper'],
+    ];
+
     if (!empty($selected_products)) {
-      $form['rental_section']['quantities'] = [
+      $form['rental_section']['quantities_wrapper']['quantities'] = [
         '#type' => 'fieldset',
         '#title' => 'Quantities per Product',
       ];
@@ -289,7 +307,7 @@ class RentalTransactionForm extends FormBase {
         if ($product_id) {
           $variation = $this->entityTypeManager->getStorage('node')->load($product_id);
           if ($variation) {
-            $form['rental_section']['quantities']['quantity_' . $product_id] = [
+            $form['rental_section']['quantities_wrapper']['quantities']['quantity_' . $product_id] = [
               '#type' => 'number',
               '#title' => $variation->label() . ' - Quantity',
               '#min' => 1,
@@ -299,6 +317,13 @@ class RentalTransactionForm extends FormBase {
           }
         }
       }
+    } else {
+      $form['rental_section']['quantities_wrapper']['empty_msg'] = [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#attributes' => ['style' => 'color: #999; font-style: italic;'],
+        '#value' => 'No products selected. Please go back to Step 2 and add products.',
+      ];
     }
 
     $form['rental_section']['notes'] = [
@@ -594,6 +619,20 @@ class RentalTransactionForm extends FormBase {
   }
 
   /**
+   * AJAX callback to update the entire product section.
+   */
+  public function updateProductSection(array &$form, FormStateInterface $form_state) {
+    return $form['product_section'];
+  }
+
+  /**
+   * AJAX callback to update rental quantities wrapper.
+   */
+  public function updateQuantitiesSection(array &$form, FormStateInterface $form_state) {
+    return $form['rental_section']['quantities_wrapper'];
+  }
+
+  /**
    * Add product callback.
    */
   public function addProduct(array &$form, FormStateInterface $form_state) {
@@ -622,13 +661,6 @@ class RentalTransactionForm extends FormBase {
     } else {
       \Drupal::messenger()->addWarning('Please select a product first.');
     }
-  }
-
-  /**
-   * AJAX callback to update selected products.
-   */
-  public function updateSelectedProducts(array &$form, FormStateInterface $form_state) {
-    return $form['product_section']['selected_products_wrapper'];
   }
 
   /**
