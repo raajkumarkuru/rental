@@ -569,32 +569,33 @@ class RentalTransactionForm extends FormBase {
     $values = $form_state->getValues();
 
     if ($step == 1) {
-      $stored['customer_name'] = $values['customer_name'] ?? '';
-      $stored['customer_email'] = $values['customer_email'] ?? '';
-      $stored['customer_phone'] = $values['customer_phone'] ?? '';
-      $stored['customer_company'] = $values['customer_company'] ?? '';
-      $stored['customer_address'] = $values['customer_address'] ?? '';
-      $stored['customer_city'] = $values['customer_city'] ?? '';
-      $stored['customer_state'] = $values['customer_state'] ?? '';
-      $stored['customer_zip'] = $values['customer_zip'] ?? '';
+      // Store customer information from step 1
+      $stored['customer_name'] = $values['customer_section']['customer_name'] ?? '';
+      $stored['customer_email'] = $values['customer_section']['customer_email'] ?? '';
+      $stored['customer_phone'] = $values['customer_section']['customer_phone'] ?? '';
+      $stored['customer_company'] = $values['customer_section']['customer_company'] ?? '';
+      $stored['customer_address'] = $values['customer_section']['customer_address'] ?? '';
+      $stored['customer_city'] = $values['customer_section']['customer_city'] ?? '';
+      $stored['customer_state'] = $values['customer_section']['customer_state'] ?? '';
+      $stored['customer_zip'] = $values['customer_section']['customer_zip'] ?? '';
     } elseif ($step == 2) {
-      // Get selected products from the stored values (set via addProduct).
-      // selected_products is already stored during form interaction.
-      // Validate that at least one product is selected.
-      if (empty($stored['selected_products'])) {
-        \Drupal::messenger()->addError('Please select at least one product.');
-        $form_state->setRebuild(TRUE);
-      }
+      // Step 2: selected_products are already stored via addProduct callback
+      // No additional values to store from form submission
     } elseif ($step == 3) {
-      $stored['start_date'] = $values['start_date'] ?? '';
-      $stored['end_date'] = $values['end_date'] ?? '';
+      // Store rental details from step 3
+      $stored['start_date'] = $values['rental_section']['start_date'] ?? '';
+      $stored['end_date'] = $values['rental_section']['end_date'] ?? '';
       $stored['quantities'] = [];
-      foreach ($values as $key => $value) {
-        if (strpos($key, 'quantity_') === 0) {
-          $stored['quantities'][$key] = $value;
+      $stored['notes'] = $values['rental_section']['notes'] ?? '';
+      
+      // Extract quantities from rental_section
+      if (isset($values['rental_section']['quantities_wrapper']['quantities'])) {
+        foreach ($values['rental_section']['quantities_wrapper']['quantities'] as $key => $value) {
+          if (strpos($key, 'quantity_') === 0) {
+            $stored['quantities'][$key] = $value;
+          }
         }
       }
-      $stored['notes'] = $values['notes'] ?? '';
     }
 
     $form_state->set('stored_values', $stored);
