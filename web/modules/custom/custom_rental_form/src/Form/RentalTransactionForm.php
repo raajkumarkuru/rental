@@ -56,8 +56,12 @@ class RentalTransactionForm extends FormBase {
       $form_state->set('stored_values', []);
     }
 
+    // Wrap entire form in AJAX container for step navigation.
     $form['#prefix'] = '<div id="rental-form-wrapper">';
     $form['#suffix'] = '</div>';
+
+    // Add progress indicator.
+    $form['#prefix'] .= $this->getProgressIndicator($step);
 
     // Step 1: Customer Information.
     if ($step == 1) {
@@ -76,10 +80,7 @@ class RentalTransactionForm extends FormBase {
       $this->buildReviewStep($form, $form_state);
     }
 
-    // Add progress indicator.
-    $form['#prefix'] .= $this->getProgressIndicator($step);
-
-    // Add navigation buttons.
+    // Add navigation buttons with AJAX.
     $this->addNavigationButtons($form, $form_state, $step);
 
     return $form;
@@ -446,7 +447,7 @@ class RentalTransactionForm extends FormBase {
   }
 
   /**
-   * Add navigation buttons.
+   * Add navigation buttons with AJAX support.
    */
   private function addNavigationButtons(array &$form, FormStateInterface $form_state, $step) {
     $form['actions'] = ['#type' => 'actions'];
@@ -457,6 +458,12 @@ class RentalTransactionForm extends FormBase {
         '#value' => 'Previous',
         '#submit' => ['::previousStep'],
         '#limit_validation_errors' => [],
+        '#ajax' => [
+          'callback' => '::updateFormStep',
+          'wrapper' => 'rental-form-wrapper',
+          'method' => 'replace',
+          'effect' => 'fade',
+        ],
       ];
     }
 
@@ -465,6 +472,13 @@ class RentalTransactionForm extends FormBase {
         '#type' => 'submit',
         '#value' => 'Next',
         '#submit' => ['::nextStep'],
+        '#validate' => ['::validateStep'],
+        '#ajax' => [
+          'callback' => '::updateFormStep',
+          'wrapper' => 'rental-form-wrapper',
+          'method' => 'replace',
+          'effect' => 'fade',
+        ],
       ];
     } else {
       $form['actions']['submit'] = [
@@ -475,20 +489,61 @@ class RentalTransactionForm extends FormBase {
   }
 
   /**
-   * Next step callback.
+   * AJAX callback to update the entire form for step navigation.
    */
-  public function nextStep(array &$form, FormStateInterface $form_state) {
+  public function updateFormStep(array &$form, FormStateInterface $form_state) {
+    // Return the form element that is wrapped by the rental-form-wrapper div
+    // The wrapper itself is applied at the buildForm level
+    return $form;
+  }
+
+  /**
+   * Validate only the current step's fields.
+   */
+  public function validateStep(array &$form, FormStateInterface $form_state) {
     $step = $form_state->get('step');
     
-    // Validate step 2 - ensure at least one product is selected.
-    if ($step == 2) {
+    if ($step == 1) {
+      // Validate customer info fields
+      $name = $form_state->getValue('customer_name');
+      $email = $form_state->getValue('customer_email');
+      $phone = $form_state->getValue('customer_phone');
+      
+      if (empty($name)) {
+        $form_state->setErrorByName('customer_name', 'Customer name is required.');
+      }
+      if (empty($email)) {
+        $form_state->setErrorByName('customer_email', 'Email address is required.');
+      }
+      if (empty($phone)) {
+        $form_state->setErrorByName('customer_phone', 'Phone number is required.');
+      }
+    } elseif ($step == 2) {
+      // Validate that at least one product is selected
       $stored = $form_state->get('stored_values') ?? [];
       if (empty($stored['selected_products'])) {
         \Drupal::messenger()->addError('Please select at least one product before proceeding.');
         $form_state->setRebuild(TRUE);
-        return;
+      }
+    } elseif ($step == 3) {
+      // Validate rental details
+      $start_date = $form_state->getValue('start_date');
+      $end_date = $form_state->getValue('end_date');
+      
+      if (empty($start_date)) {
+        $form_state->setErrorByName('start_date', 'Start date is required.');
+      }
+      if (empty($end_date)) {
+        $form_state->setErrorByName('end_date', 'End date is required.');
       }
     }
+  }
+
+  /**
+   * Next step callback.
+   */
+  public function nextStep(array &$form, FormStateInterface $form_state) {
+    $step = $form_state->get('step');
     
     $this->storeStepValues($form, $form_state);
     $form_state->set('step', $step + 1);
