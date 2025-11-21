@@ -472,7 +472,7 @@ class RentalTransactionForm extends FormBase {
         '#type' => 'submit',
         '#value' => 'Next',
         '#submit' => ['::nextStep'],
-        '#validate' => ['::validateStep'],
+        '#limit_validation_errors' => [],
         '#ajax' => [
           'callback' => '::updateFormStep',
           'wrapper' => 'rental-form-wrapper',
@@ -551,7 +551,65 @@ class RentalTransactionForm extends FormBase {
   public function nextStep(array &$form, FormStateInterface $form_state) {
     $step = $form_state->get('step');
     
-    $this->storeStepValues($form, $form_state);
+    // Validate current step before advancing
+    if ($step == 1) {
+      $values = $form_state->getValues();
+      $customer_data = $values['customer_section'] ?? [];
+      
+      if (empty($customer_data['customer_name']) || empty($customer_data['customer_email']) || empty($customer_data['customer_phone'])) {
+        \Drupal::messenger()->addError('Please fill in all required customer fields.');
+        return;
+      }
+      
+      // Store customer values
+      $stored = $form_state->get('stored_values') ?? [];
+      $stored['customer_name'] = $customer_data['customer_name'] ?? '';
+      $stored['customer_email'] = $customer_data['customer_email'] ?? '';
+      $stored['customer_phone'] = $customer_data['customer_phone'] ?? '';
+      $stored['customer_company'] = $customer_data['customer_company'] ?? '';
+      $stored['customer_address'] = $customer_data['customer_address'] ?? '';
+      $stored['customer_city'] = $customer_data['customer_city'] ?? '';
+      $stored['customer_state'] = $customer_data['customer_state'] ?? '';
+      $stored['customer_zip'] = $customer_data['customer_zip'] ?? '';
+      $form_state->set('stored_values', $stored);
+    }
+    elseif ($step == 2) {
+      // Validate that at least one product is selected
+      $stored = $form_state->get('stored_values') ?? [];
+      if (empty($stored['selected_products'])) {
+        \Drupal::messenger()->addError('Please select at least one product before proceeding.');
+        return;
+      }
+    }
+    elseif ($step == 3) {
+      // Validate and store rental details
+      $values = $form_state->getValues();
+      $rental_data = $values['rental_section'] ?? [];
+      
+      if (empty($rental_data['start_date']) || empty($rental_data['end_date'])) {
+        \Drupal::messenger()->addError('Please fill in rental dates.');
+        return;
+      }
+      
+      // Store rental values
+      $stored = $form_state->get('stored_values') ?? [];
+      $stored['start_date'] = $rental_data['start_date'] ?? '';
+      $stored['end_date'] = $rental_data['end_date'] ?? '';
+      $stored['notes'] = $rental_data['notes'] ?? '';
+      $stored['quantities'] = [];
+      
+      // Extract quantities from nested structure
+      if (isset($rental_data['quantities_wrapper']['quantities'])) {
+        foreach ($rental_data['quantities_wrapper']['quantities'] as $key => $value) {
+          if (strpos($key, 'quantity_') === 0) {
+            $stored['quantities'][$key] = $value;
+          }
+        }
+      }
+      $form_state->set('stored_values', $stored);
+    }
+    
+    // Move to next step
     $form_state->set('step', $step + 1);
     $form_state->setRebuild(TRUE);
   }
@@ -566,59 +624,9 @@ class RentalTransactionForm extends FormBase {
   }
 
   /**
-   * Store step values.
-   */
-  private function storeStepValues(array &$form, FormStateInterface $form_state) {
-    $step = $form_state->get('step');
-    $stored = $form_state->get('stored_values') ?? [];
-
-    $values = $form_state->getValues();
-
-    if ($step == 1) {
-      // Store customer information from step 1
-      // Values from fieldsets are returned with parent key
-      if (isset($values['customer_section'])) {
-        $customer_data = $values['customer_section'];
-        $stored['customer_name'] = $customer_data['customer_name'] ?? '';
-        $stored['customer_email'] = $customer_data['customer_email'] ?? '';
-        $stored['customer_phone'] = $customer_data['customer_phone'] ?? '';
-        $stored['customer_company'] = $customer_data['customer_company'] ?? '';
-        $stored['customer_address'] = $customer_data['customer_address'] ?? '';
-        $stored['customer_city'] = $customer_data['customer_city'] ?? '';
-        $stored['customer_state'] = $customer_data['customer_state'] ?? '';
-        $stored['customer_zip'] = $customer_data['customer_zip'] ?? '';
-      }
-    } elseif ($step == 2) {
-      // Step 2: selected_products are already stored via addProduct callback
-      // No additional values to store from form submission
-    } elseif ($step == 3) {
-      // Store rental details from step 3
-      if (isset($values['rental_section'])) {
-        $rental_data = $values['rental_section'];
-        $stored['start_date'] = $rental_data['start_date'] ?? '';
-        $stored['end_date'] = $rental_data['end_date'] ?? '';
-        $stored['notes'] = $rental_data['notes'] ?? '';
-        $stored['quantities'] = [];
-        
-        // Extract quantities from nested structure
-        if (isset($rental_data['quantities_wrapper']['quantities'])) {
-          foreach ($rental_data['quantities_wrapper']['quantities'] as $key => $value) {
-            if (strpos($key, 'quantity_') === 0) {
-              $stored['quantities'][$key] = $value;
-            }
-          }
-        }
-      }
-    }
-
-    $form_state->set('stored_values', $stored);
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->storeStepValues($form, $form_state);
     $stored = $form_state->get('stored_values') ?? [];
 
     // Create Customer node.
