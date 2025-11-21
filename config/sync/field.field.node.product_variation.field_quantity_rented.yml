@@ -1,0 +1,19 @@
+uuid: 00000000-0000-0000-0000-000000000027
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.product_variation
+field_name: field_quantity_rented
+entity_type: node
+type: integer
+settings:
+  min: 0
+  max: null
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

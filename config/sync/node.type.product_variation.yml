@@ -1,0 +1,13 @@
+uuid: 00000000-0000-0000-0000-000000000020
+langcode: en
+status: true
+dependencies:
+  module:
+    - text
+name: Product Variation
+type: product_variation
+description: 'Represents a specific SKU/size variant of a product'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

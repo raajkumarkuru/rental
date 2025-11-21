@@ -1,0 +1,21 @@
+uuid: 00000000-0000-0000-0000-000000000052
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.rental_transaction
+    - paragraphs.paragraphs_type.rental_item
+  module:
+    - paragraphs
+field_name: field_rental_items
+entity_type: node
+type: entity_reference_revisions
+settings:
+  target_type: paragraph
+module: paragraphs
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

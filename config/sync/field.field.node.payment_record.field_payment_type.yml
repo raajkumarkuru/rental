@@ -1,0 +1,23 @@
+uuid: 00000000-0000-0000-0000-000000000075
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+field_name: field_payment_type
+entity_type: node
+type: list_string
+bundle: payment_record
+allowed_values:
+  cash: Cash
+  check: Check
+  credit_card: 'Credit Card'
+  bank_transfer: 'Bank Transfer'
+  other: Other
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

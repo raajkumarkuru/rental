@@ -1,0 +1,24 @@
+uuid: 00000000-0000-0000-0000-000000000072
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+    - node.type.product_variation
+field_name: field_variation
+entity_type: node
+type: entity_reference
+bundle: payment_record
+settings:
+  target_type: node
+  handler: default:node
+  handler_settings:
+    target_bundles:
+      product_variation: product_variation
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

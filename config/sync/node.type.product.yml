@@ -1,0 +1,13 @@
+uuid: 00000000-0000-0000-0000-000000000010
+langcode: en
+status: true
+dependencies:
+  module:
+    - text
+name: Product
+type: product
+description: 'Represents a product family (e.g., Supporting Rod)'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

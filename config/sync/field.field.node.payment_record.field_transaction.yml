@@ -1,0 +1,24 @@
+uuid: 00000000-0000-0000-0000-000000000071
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+    - node.type.rental_transaction
+field_name: field_transaction
+entity_type: node
+type: entity_reference
+bundle: payment_record
+settings:
+  target_type: node
+  handler: default:node
+  handler_settings:
+    target_bundles:
+      rental_transaction: rental_transaction
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

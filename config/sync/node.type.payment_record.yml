@@ -1,0 +1,13 @@
+uuid: 00000000-0000-0000-0000-000000000070
+langcode: en
+status: true
+dependencies:
+  module:
+    - text
+name: Payment Record
+type: payment_record
+description: 'Records payments made for rental transactions'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

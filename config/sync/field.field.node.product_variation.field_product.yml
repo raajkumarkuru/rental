@@ -1,0 +1,23 @@
+uuid: 00000000-0000-0000-0000-000000000021
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.product_variation
+    - node.type.product
+field_name: field_product
+entity_type: node
+type: entity_reference
+settings:
+  target_type: node
+  handler: default:node
+  handler_settings:
+    target_bundles:
+      product: product
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

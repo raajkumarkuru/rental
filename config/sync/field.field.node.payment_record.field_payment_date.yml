@@ -1,0 +1,19 @@
+uuid: 00000000-0000-0000-0000-000000000074
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+field_name: field_payment_date
+entity_type: node
+type: datetime
+bundle: payment_record
+settings:
+  datetime_type: datetime
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

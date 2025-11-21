@@ -1,0 +1,21 @@
+uuid: 00000000-0000-0000-0000-000000000076
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+  module:
+    - text
+field_name: field_notes
+entity_type: node
+type: text_long
+bundle: payment_record
+settings:
+  max_length: null
+module: text
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

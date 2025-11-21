@@ -1,0 +1,25 @@
+uuid: 00000000-0000-0000-0000-000000000011
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.product
+  module:
+    - text
+    - taxonomy
+field_name: field_category
+entity_type: node
+type: entity_reference
+settings:
+  target_type: taxonomy_term
+  handler: default:taxonomy_term
+  handler_settings:
+    target_bundles:
+      category: category
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

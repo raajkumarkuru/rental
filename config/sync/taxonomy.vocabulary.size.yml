@@ -1,0 +1,8 @@
+uuid: 00000000-0000-0000-0000-000000000002
+langcode: en
+status: true
+dependencies: {  }
+name: Size
+vid: size
+description: 'Product sizes (e.g., small, medium, large)'
+weight: 1

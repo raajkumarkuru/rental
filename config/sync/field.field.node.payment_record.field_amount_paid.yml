@@ -1,0 +1,20 @@
+uuid: 00000000-0000-0000-0000-000000000073
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.payment_record
+field_name: field_amount_paid
+entity_type: node
+type: decimal
+bundle: payment_record
+settings:
+  precision: 12
+  scale: 2
+module: core
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

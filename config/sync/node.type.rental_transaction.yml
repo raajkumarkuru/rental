@@ -1,0 +1,13 @@
+uuid: 00000000-0000-0000-0000-000000000050
+langcode: en
+status: true
+dependencies:
+  module:
+    - text
+name: Rental Transaction
+type: rental_transaction
+description: 'Records rental transactions with customer, items, dates, and payment info'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false

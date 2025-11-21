@@ -1,0 +1,9 @@
+uuid: 00000000-0000-0000-0000-000000000040
+langcode: en
+status: true
+dependencies: {  }
+id: rental_item
+label: 'Rental Item'
+description: 'Line item for rental transactions containing variation, quantity, rate, and total'
+icon_uuid: null
+behavior_plugins: {  }
