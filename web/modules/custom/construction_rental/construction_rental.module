@@ -36,12 +36,13 @@ function construction_rental_theme($existing, $type, $theme, $path) {
     'construction_rental_dashboard' => [
       'variables' => [
         'products' => NULL,
+        'products_view' => NULL,
         'orders' => NULL,
         'orders_view' => NULL,
         'title' => NULL,
       ],
-  'template' => 'dashboard',
-  'path' => \Drupal::service('extension.list.module')->getPath('construction_rental') . '/templates',
+      'template' => 'dashboard',
+      'path' => \Drupal::service('extension.list.module')->getPath('construction_rental') . '/templates',
     ],
     'product_search' => [
       'variables' => [
