@@ -8,6 +8,7 @@
 {{ attach_library('construction_rental/dashboard') }}
 
 <div class="cr-dashboard">
+
   {# ================= HEADER ================= #}
   <header class="cr-header">
     <div class="cr-title">
@@ -44,8 +45,27 @@
   {# ================= MAIN GRID ================= #}
   <div class="cr-grid">
 
-    {# ===== PRODUCTS & VARIANTS ===== #}
+    {# ===== LEFT COLUMN ===== #}
     <section>
+
+      {# ===== QUICK ACTIONS (MOVED HERE) ===== #}
+      <div class="cr-card">
+        <h3 style="margin-top:0;">Quick Actions</h3>
+
+        <div class="cr-controls">
+          <a href="{{ path('entity.commerce_product.add_page') }}"
+             class="button">
+            Add product
+          </a>
+
+          <a href="{{ path('entity.commerce_product.collection') }}"
+             class="button secondary">
+            All products
+          </a>
+        </div>
+      </div>
+
+      {# ===== PRODUCTS & VARIANTS ===== #}
       <div class="cr-card">
         <h2 style="margin-top:0;">Products &amp; Variants</h2>
 
@@ -57,6 +77,7 @@
           </div>
         {% endif %}
       </div>
+
     </section>
 
     {# ================= SIDEBAR ================= #}
@@ -80,23 +101,6 @@
         {% else %}
           <div class="cr-empty">No recent orders</div>
         {% endif %}
-      </div>
-
-      {# ===== QUICK ACTIONS ===== #}
-      <div class="cr-card">
-        <h3 style="margin-top:0;">Quick Actions</h3>
-
-        <div class="cr-controls">
-          <a href="{{ path('entity.commerce_product.add_page') }}"
-             class="button">
-            Add product
-          </a>
-
-          <a href="{{ path('entity.commerce_product.collection') }}"
-             class="button secondary">
-            All products
-          </a>
-        </div>
       </div>
 
     </aside>
