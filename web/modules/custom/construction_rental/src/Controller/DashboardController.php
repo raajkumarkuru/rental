@@ -53,23 +53,16 @@ class DashboardController extends ControllerBase {
     $products_view = NULL;
     $orders_view = NULL;
     
-      try {
-        $view = Views::getView('products_variants');
-        if ($view) {
-          // Set the display and execute; then build a renderable array.
-          $view->setDisplay('block_1');
-          $view->preExecute();
-          $view->execute();
-          $products_view = $view->render();
-        }
-        else {
-          $products_view = NULL;
-        }
-      }
-      catch (\Throwable $e) {
-        \Drupal::logger('construction_rental')->error('Error rendering view "products_variants": @msg', ['@msg' => $e->getMessage()]);
-        $products_view = NULL;
-      }
+     $view = Views::getView('products_variants');
+if ($view && $view->access('block_1')) {
+
+  // Ensure the display exists before using it.
+  if ($view->setDisplay('block_1')) {
+
+    // Build render array (executes internally).
+    $products_view = $view->buildRenderable('block_1');
+  }
+}
 
       try {
         $view = Views::getView('construction_rental_orders');
