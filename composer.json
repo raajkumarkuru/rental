@@ -36,6 +36,7 @@
         "drupal/paragraphs": "^1.19",
         "drupal/pathauto": "^1.14",
         "drupal/queue_ui": "^3.2",
+        "drupal/redirect_after_login": "^3.0",
         "drupal/smtp": "^1.4",
         "drupal/views_attachment_tabs": "^1.1",
         "drush/drush": "^13.6"
