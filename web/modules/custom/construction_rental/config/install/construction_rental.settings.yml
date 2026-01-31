@@ -1,0 +1,3 @@
+# Default settings for Construction Rental module
+advance_percentage: 10
+preferred_payment_gateway: ''

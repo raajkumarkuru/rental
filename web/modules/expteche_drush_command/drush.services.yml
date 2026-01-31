@@ -1,0 +1,5 @@
+services:
+  expteche_drush_command.commands:
+    class: \Drupal\expteche_drush_command\Commands\ExptecheDrushCommandCommands
+    tags:
+      - { name: drush.command }

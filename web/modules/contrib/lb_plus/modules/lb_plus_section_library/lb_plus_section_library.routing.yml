@@ -1,0 +1,14 @@
+lb_plus_section_library.place_template:
+  path: '/lb-plus-section-library/place-template/{section_library_template}/{section_storage_type}/{section_storage}/{nested_storage_path}'
+  defaults:
+    _title: 'Place Template'
+    _controller: '\Drupal\lb_plus_section_library\Controller\PlaceTemplate'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      entity:
+        type: entity:section_library_template
+      section_storage:
+        layout_builder_tempstore: TRUE

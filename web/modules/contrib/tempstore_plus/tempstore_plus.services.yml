@@ -1,0 +1,16 @@
+services:
+  tempstore_plus.strategy_selector:
+    class: Drupal\tempstore_plus\StrategySelector
+    # Strategy IDs are populated dynamically by TempstorePlusServiceProvider.
+    arguments: ['@service_container', []]
+
+  tempstore_plus.strategy.entity:
+    class: Drupal\tempstore_plus\Strategy\EntityTempstoreStrategy
+    # Optional workspace manager dependency (won't break if workspaces is disabled).
+    arguments: ['@tempstore.shared', '@?workspaces.manager']
+    tags:
+      - { name: tempstore_strategy, priority: 0 }
+
+  tempstore_plus.entity_tempstore_repository:
+    class: Drupal\tempstore_plus\EntityTempstoreRepository
+    arguments: ['@tempstore_plus.strategy_selector']

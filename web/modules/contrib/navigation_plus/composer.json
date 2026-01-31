@@ -1,0 +1,37 @@
+{
+    "name": "drupal/navigation_plus",
+    "description": "A unified UI for a variety of page building tools.",
+    "type": "drupal-module",
+    "homepage": "https://drupal.org/project/navigation_plus",
+    "authors": [
+        {
+            "name": "Tim Bozeman",
+            "homepage": "https://www.drupal.org/u/tim-bozeman",
+            "role": "Maintainer"
+        },
+        {
+            "name": "See other contributors",
+            "homepage": "https://www.drupal.org/node/3427190/committers"
+        }
+    ],
+    "support": {
+        "issues": "https://drupal.org/project/issues/navigation_plus",
+        "source": "https://cgit.drupalcode.org/navigation_plus"
+    },
+    "license": "GPL-2.0-or-later",
+    "minimum-stability": "dev",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    ],
+    "require": {
+        "drupal/twig_events": "^1.0"
+    },
+    "suggest": {
+        "drupal/edit_plus": "The Edit+ tool provides radical inline editing!",
+        "drupal/lb_plus": "The Layout Builder+ tools are a drop in replacement for the Layout Builder UI.",
+        "enyo/dropzone": "Required to use drupal/dropzonejs. DropzoneJS is an open source library that provides drag’n’drop file uploads with image previews."
+    }
+}

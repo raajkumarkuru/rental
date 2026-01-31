@@ -1,0 +1,31 @@
+/* The wrapper for all top bars. */
+#edit-mode-top-bar {
+  user-select: none;
+  /* The z-index needs to be higher than &.ck-toolbar-container in edit+'s ckeditor.css */
+  z-index: 1261;
+  .active {
+    background-color: var(--navigation-plus-main-color);
+    color: var(--admin-toolbar-color-white);
+    &::before {
+      background-color: var(--admin-toolbar-color-white);
+    }
+  }
+  .top-bar__left {
+    justify-content: flex-start;
+  }
+  .top-bar__right {
+    justify-content: flex-end;
+  }
+  &.top-bar {
+    padding-inline: calc(var(--admin-toolbar-sidebar-width) + var(--admin-toolbar-space-32)) var(--admin-toolbar-space-32);
+  }
+}
+
+.top-bar-icon {
+  height: 30px;
+  width: 30px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  cursor: pointer;
+}
+

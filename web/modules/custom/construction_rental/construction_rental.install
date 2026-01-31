@@ -1,0 +1,392 @@
+<?php
+
+/**
+ * Post-update: ensure views config for dashboard are imported or available.
+ */
+function construction_rental_post_update_import_views(array &$sandbox) {
+  // This hook is a noop if config is already present; site administrators can
+  // run `drush cim` to import configs from the module's config/install.
+  $sandbox['message'] = 'If views are not visible, import the module configs with drush cim or enable the module.';
+}
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Construction Rental module.
+ */
+
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+
+/**
+ * Implements hook_install().
+ */
+function construction_rental_install() {
+  // Create product type for rental products if it doesn't exist.
+  $product_type_storage = \Drupal::entityTypeManager()->getStorage('commerce_product_type');
+  $product_type = $product_type_storage->load('rental');
+  
+  if (!$product_type) {
+    $product_type = $product_type_storage->create([
+      'id' => 'rental',
+      'label' => 'Rental Product',
+      'description' => 'Product type for construction materials rental',
+      'variationType' => 'rental_variation',
+      'multipleVariations' => TRUE,
+      'injectVariationFields' => TRUE,
+    ]);
+    $product_type->save();
+  }
+
+  // Create product variation type for rental variations.
+  $variation_type_storage = \Drupal::entityTypeManager()->getStorage('commerce_product_variation_type');
+  $variation_type = $variation_type_storage->load('rental_variation');
+  
+  if (!$variation_type) {
+    $variation_type = $variation_type_storage->create([
+      'id' => 'rental_variation',
+      'label' => 'Rental Variation',
+      'description' => 'Product variation type for rental items',
+      'orderItemType' => 'default',
+      'generateTitle' => TRUE,
+    ]);
+    $variation_type->save();
+  }
+
+  // Configure form displays.
+  _construction_rental_configure_form_displays();
+  
+  // Configure view displays.
+  _construction_rental_configure_view_displays();
+}
+
+/**
+ * Configures form displays for rental fields.
+ */
+function _construction_rental_configure_form_displays() {
+  // Product variation form display.
+  $form_display = EntityFormDisplay::load('commerce_product_variation.rental_variation.default');
+  if (!$form_display) {
+    $form_display = EntityFormDisplay::create([
+      'targetEntityType' => 'commerce_product_variation',
+      'bundle' => 'rental_variation',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($form_display) {
+    $form_display->setComponent('field_rental_period_days', [
+      'type' => 'number',
+      'weight' => 20,
+    ]);
+    $form_display->save();
+  }
+
+  // Order item form display.
+  $form_display = EntityFormDisplay::load('commerce_order_item.default.default');
+  if (!$form_display) {
+    $form_display = EntityFormDisplay::create([
+      'targetEntityType' => 'commerce_order_item',
+      'bundle' => 'default',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($form_display) {
+    $form_display->setComponent('field_rental_start_date', [
+      'type' => 'datetime_default',
+      'weight' => 20,
+    ]);
+    $form_display->setComponent('field_rental_end_date', [
+      'type' => 'datetime_default',
+      'weight' => 21,
+    ]);
+    $form_display->setComponent('field_rented_quantity', [
+      'type' => 'number',
+      'weight' => 22,
+    ]);
+    $form_display->setComponent('field_returned_quantity', [
+      'type' => 'number',
+      'weight' => 23,
+    ]);
+    $form_display->setComponent('field_rental_status', [
+      'type' => 'options_select',
+      'weight' => 24,
+    ]);
+    $form_display->save();
+  }
+
+  // Order form display.
+  $form_display = EntityFormDisplay::load('commerce_order.default.default');
+  if (!$form_display) {
+    $form_display = EntityFormDisplay::create([
+      'targetEntityType' => 'commerce_order',
+      'bundle' => 'default',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($form_display) {
+    $form_display->setComponent('field_advance_payment', [
+      'type' => 'commerce_price_default',
+      'weight' => 30,
+    ]);
+    $form_display->save();
+  }
+}
+
+/**
+ * Configures view displays for rental fields.
+ */
+function _construction_rental_configure_view_displays() {
+  // Product variation view display.
+  $view_display = EntityViewDisplay::load('commerce_product_variation.rental_variation.default');
+  if (!$view_display) {
+    $view_display = EntityViewDisplay::create([
+      'targetEntityType' => 'commerce_product_variation',
+      'bundle' => 'rental_variation',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($view_display) {
+    // Stock fields are now managed by Commerce Stock module.
+    $view_display->setComponent('field_rental_period_days', [
+      'type' => 'number_integer',
+      'label' => 'above',
+      'weight' => 20,
+    ]);
+    $view_display->save();
+  }
+
+  // Order item view display.
+  $view_display = EntityViewDisplay::load('commerce_order_item.default.default');
+  if (!$view_display) {
+    $view_display = EntityViewDisplay::create([
+      'targetEntityType' => 'commerce_order_item',
+      'bundle' => 'default',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($view_display) {
+    $view_display->setComponent('field_rental_start_date', [
+      'type' => 'datetime_default',
+      'label' => 'above',
+      'weight' => 20,
+    ]);
+    $view_display->setComponent('field_rental_end_date', [
+      'type' => 'datetime_default',
+      'label' => 'above',
+      'weight' => 21,
+    ]);
+    $view_display->setComponent('field_rented_quantity', [
+      'type' => 'number_decimal',
+      'label' => 'above',
+      'weight' => 22,
+    ]);
+    $view_display->setComponent('field_returned_quantity', [
+      'type' => 'number_decimal',
+      'label' => 'above',
+      'weight' => 23,
+    ]);
+    $view_display->setComponent('field_rental_status', [
+      'type' => 'list_default',
+      'label' => 'above',
+      'weight' => 24,
+    ]);
+    $view_display->save();
+  }
+
+  // Order view display.
+  $view_display = EntityViewDisplay::load('commerce_order.default.default');
+  if (!$view_display) {
+    $view_display = EntityViewDisplay::create([
+      'targetEntityType' => 'commerce_order',
+      'bundle' => 'default',
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  
+  if ($view_display) {
+    // Ensure core order meta fields are present on the order view display so
+    // templates that expect them (order_number, placed, changed, uid, mail,
+    // ip_address, billing/shipping information) don't render empty values.
+    // Only add these components if they are not already present.
+    $core_components = [
+      'order_number' => [
+        'type' => 'commerce_order_number',
+        'label' => 'hidden',
+        'weight' => 0,
+      ],
+      'placed' => [
+        'type' => 'datetime_default',
+        'label' => 'hidden',
+        'weight' => 1,
+      ],
+      'changed' => [
+        'type' => 'datetime_default',
+        'label' => 'hidden',
+        'weight' => 2,
+      ],
+      'uid' => [
+        'type' => 'entity_reference_label',
+        'label' => 'hidden',
+        'weight' => 3,
+      ],
+      'mail' => [
+        'type' => 'string',
+        'label' => 'hidden',
+        'weight' => 4,
+      ],
+      'ip_address' => [
+        'type' => 'string',
+        'label' => 'hidden',
+        'weight' => 5,
+      ],
+      'billing_information' => [
+        'type' => 'commerce_order_billing_information',
+        'label' => 'hidden',
+        'weight' => 10,
+      ],
+      'shipping_information' => [
+        'type' => 'commerce_order_shipping_information',
+        'label' => 'hidden',
+        'weight' => 11,
+      ],
+    ];
+
+    foreach ($core_components as $name => $component) {
+      if (!$view_display->getComponent($name)) {
+        $view_display->setComponent($name, $component);
+      }
+    }
+
+    // Add the module-specific components last (advance payment, remaining balance).
+    $view_display->setComponent('field_advance_payment', [
+      'type' => 'commerce_price_default',
+      'label' => 'above',
+      'weight' => 30,
+    ]);
+    $view_display->setComponent('field_remaining_balance', [
+      'type' => 'commerce_price_default',
+      'label' => 'above',
+      'weight' => 31,
+    ]);
+    $view_display->save();
+  }
+}
+
+/**
+ * Updates computed field class names.
+ */
+function construction_rental_post_update_update_computed_field_classes(&$sandbox) {
+  // Clear all entity field manager caches to force reload of field definitions.
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+  \Drupal::service('entity_type.manager')->clearCachedDefinitions();
+  \Drupal::service('plugin.manager.field.field_type')->clearCachedDefinitions();
+  
+  return t('Updated computed field class names.');
+}
+
+
+/**
+ * Post update: Ensure INR currency exists and set stores to use INR.
+ */
+function construction_rental_post_update_set_inr_currency(&$sandbox) {
+  // Ensure commerce_price module's currency importer/storage is available.
+  if (!\Drupal::moduleHandler()->moduleExists('commerce_price') && !\Drupal::moduleHandler()->moduleExists('commerce')) {
+    return t('Commerce/commerce_price not available; cannot create INR currency.');
+  }
+
+  // Create or load INR currency config entity.
+  $currency_storage = \Drupal::entityTypeManager()->getStorage('commerce_currency');
+  $inr = $currency_storage->load('INR');
+  if (!$inr) {
+    // Create a basic INR currency entity.
+    $inr = $currency_storage->create([
+      'currencyCode' => 'INR',
+      'name' => 'Indian Rupee',
+      'numericCode' => '356',
+      'symbol' => '₹',
+      'fractionDigits' => 2,
+    ]);
+    $inr->save();
+  }
+
+  // Ensure USD currency also exists as a fallback if any data references it.
+  // Do not create USD here; the site uses INR as the default currency.
+
+  // Set all stores to use INR by default if they don't have a default currency.
+  $store_storage = \Drupal::entityTypeManager()->getStorage('commerce_store');
+  $stores = $store_storage->loadMultiple();
+  $updated = 0;
+  foreach ($stores as $store) {
+    try {
+      if (method_exists($store, 'getDefaultCurrencyCode')) {
+        $current = $store->getDefaultCurrencyCode();
+        if (empty($current) || $current !== 'INR') {
+          $store->setDefaultCurrencyCode('INR');
+          $store->save();
+          $updated++;
+        }
+      }
+      else {
+        // Fallback: set field if present.
+        if ($store->hasField('default_currency')) {
+          $store->set('default_currency', 'INR');
+          $store->save();
+          $updated++;
+        }
+      }
+    }
+    catch (\Exception $e) {
+      \Drupal::logger('construction_rental')->error('Failed to set INR on store @id: @msg', ['@id' => $store->id(), '@msg' => $e->getMessage()]);
+    }
+  }
+
+  return t('INR currency ensured and @count stores updated.', ['@count' => $updated]);
+}
+
+
+/**
+ * Post update: reapply view display configuration for orders.
+ *
+ * This will ensure the commerce_order view display includes the core order
+ * meta components (order_number, placed, changed, billing/shipping, etc.)
+ * alongside the module-specific components. Run with `drush updatedb`.
+ */
+function construction_rental_post_update_reapply_order_view_displays(&$sandbox) {
+  // Reconfigure view displays (this function is idempotent).
+  _construction_rental_configure_view_displays();
+
+  // Clear caches to force reload of entity/display definitions.
+  try {
+    \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+    \Drupal::service('entity_type.manager')->clearCachedDefinitions();
+    \Drupal::service('plugin.manager.field.field_type')->clearCachedDefinitions();
+  }
+  catch (\Throwable $e) {
+    // If clearing caches fails, log and continue; the post-update still applied.
+    \Drupal::logger('construction_rental')->warning('Failed to clear caches in post update: @msg', ['@msg' => $e->getMessage()]);
+  }
+
+  return t('Reapplied Construction Rental order view display configuration.');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function construction_rental_uninstall() {
+  // Note: We don't delete product types or variations as they may contain data.
+  // Fields are managed by Drupal's field system and will be removed automatically
+  // if the module is uninstalled.
+}
+

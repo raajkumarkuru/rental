@@ -1,0 +1,38 @@
+.lb-plus-layout-block,
+.layout-builder.active .layout {
+  min-height: 50px;
+}
+
+.layout-builder .layout-builder.active {
+  box-shadow: 0 0 0 3000px rgba(0, 0, 0, .5);
+  position: relative;
+  z-index: 99;
+  margin-top: 1em;
+  border: 1px solid var(--drupal-admin-color-gray-600, #798291);
+}
+
+#exit-nested-layout {
+  position: absolute;
+  z-index: 100;
+  background-color: white;
+  height: 50px;
+  top: -50px;
+  right: -1px;
+  display: none;
+  align-items: center;
+  padding: 0 1em;
+  border-top: 1px solid var(--drupal-admin-color-gray-600, #798291);
+  border-left: 1px solid var(--drupal-admin-color-gray-600, #798291);
+  border-right: 1px solid var(--drupal-admin-color-gray-600, #798291);
+  #exit-nested-layout-x {
+    height: 40px;
+    width: 40px;
+    background-image: url(../../../assets/exit-nested-mode.svg);
+  }
+  &:hover {
+    cursor: pointer;
+  }
+}
+.layout-builder.active #exit-nested-layout {
+  display: flex;
+}

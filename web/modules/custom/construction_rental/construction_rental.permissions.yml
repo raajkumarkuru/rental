@@ -1,0 +1,10 @@
+view rented out items:
+  title: 'View rented out items'
+  description: 'View the list of rented out construction materials'
+  restrict access: true
+
+manage rental returns:
+  title: 'Manage rental returns'
+  description: 'Process returns for rented items'
+  restrict access: true
+

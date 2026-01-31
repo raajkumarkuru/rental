@@ -1,0 +1,62 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  navigation_plus.ui:
+    class: Drupal\navigation_plus\NavigationPlusUi
+  Drupal\navigation_plus\NavigationPlusUi: '@navigation_plus.ui'
+
+  plugin.manager.modes:
+    class: Drupal\navigation_plus\ModePluginManager
+    parent: default_plugin_manager
+  Drupal\navigation_plus\ModePluginManager: '@plugin.manager.modes'
+
+  plugin.manager.tools:
+    class: Drupal\navigation_plus\ToolPluginManager
+    parent: default_plugin_manager
+  Drupal\navigation_plus\ToolPluginManager: '@plugin.manager.tools'
+
+  navigation_plus.messenger.edit_mode:
+    class: Drupal\navigation_plus\Message\EditModeMessenger
+    decorates: messenger
+    decoration_priority: 100
+  Drupal\navigation_plus\Message\EditModeMessenger: '@navigation_plus.messenger.edit_mode'
+
+  navigation_plus.messages.ajax:
+    class: Drupal\navigation_plus\Message\EditModeAjaxMessages
+  Drupal\navigation_plus\Message\EditModeAjaxMessages: '@navigation_plus.messages.ajax'
+
+  navigation_plus.messages.html:
+    class: Drupal\navigation_plus\Message\EditModeHtmlMessages
+  Drupal\navigation_plus\Message\EditModeHtmlMessages: '@navigation_plus.messages.html'
+
+  navigation_plus.entity_view_alter:
+    class: Drupal\navigation_plus\Hooks\EntityViewAlter
+
+  navigation_plus.event_subscriber.entity_ui_wrapper:
+    class: Drupal\navigation_plus\EventSubscriber\EntityUiWrapper
+
+  navigation_plus.event_subscriber.should_not_edit_mode:
+    class: Drupal\navigation_plus\EventSubscriber\ShouldNotEditMode
+
+  navigation_plus.event_subscriber.new_media_file_association:
+    class: Drupal\navigation_plus\EventSubscriber\NewMediaFileAssociationSettings
+
+  navigation_plus.event_subscriber.hotkey_settings:
+    class: Drupal\navigation_plus\EventSubscriber\HotkeySettings
+
+  navigation_plus.event_subscriber.initial_mode:
+    class: Drupal\navigation_plus\EventSubscriber\InitialMode
+
+  navigation_plus.form_alter.bundle_edit:
+    class: Drupal\navigation_plus\Form\BundleEditFormAlter
+
+  navigation_plus.outbound_path_processor:
+    class: Drupal\navigation_plus\PathProcessor\NavigationPlusOutboundPathProcessor
+    tags:
+      - { name: path_processor_outbound, priority: 350 }
+
+  navigation_plus.view_mode_tracker:
+    class: Drupal\navigation_plus\ViewModeTracker
+  Drupal\navigation_plus\ViewModeTracker: '@navigation_plus.view_mode_tracker'

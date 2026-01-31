@@ -1,0 +1,12 @@
+name: 'Navigation + Entity Workflow'
+type: module
+description: 'Deprecated. This functionality has been moved into the main module so Navigation + Entity Workflow will be deleted soon.'
+package: 'Page Building'
+core_version_requirement: ^10 || ^11
+dependencies:
+  - navigation_plus:navigation_plus
+
+# Information added by Drupal.org packaging script on 2025-12-16
+version: '1.1.27'
+project: 'navigation_plus'
+datestamp: 1765912877

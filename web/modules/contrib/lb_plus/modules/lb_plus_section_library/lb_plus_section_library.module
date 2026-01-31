@@ -1,0 +1,76 @@
+<?php
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function lb_plus_section_library_element_info_alter(array &$types) {
+  foreach ($types['layout_builder']['#pre_render'] as $key => $callback) {
+    if (is_string($callback) && str_contains($callback, 'SectionLibraryRender')) {
+      // Section Library tries to put it's link in a spot that doesn't exist
+      // when using LB+.
+      unset($types['layout_builder']['#pre_render'][$key]);
+    }
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function lb_plus_section_library_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'element_info_alter') {
+    unset($implementations['lb_plus_section_library']);
+    $implementations['lb_plus_section_library'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function lb_plus_section_library_section_library_template_presave(EntityInterface $entity) {
+  if ($entity->isNew()) {
+    $layout_section_field = $entity->get('layout_section');
+    $section = $layout_section_field->getSection(0);
+    $layout_section_field->removeSection(0);
+    // Ensure that we don't clone the uuid.
+    $section->setThirdPartySetting('lb_plus', 'uuid', \Drupal::service('uuid')->generate());
+    $layout_section_field->insertSection(0, $section);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lb_plus_section_library_form_section_library_template_delete_form_alter(&$form, FormStateInterface $form_state) {
+  if (\Drupal::hasService('lb_plus_section_library.update_sidebar_form_alter')) {
+    \Drupal::service('lb_plus_section_library.update_sidebar_form_alter')->formAlter($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lb_plus_section_library_form_section_library_add_section_to_library_alter(&$form, FormStateInterface $form_state) {
+  if (\Drupal::hasService('lb_plus_section_library.update_sidebar_form_alter')) {
+    \Drupal::service('lb_plus_section_library.update_sidebar_form_alter')->formAlter($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lb_plus_section_library_form_section_library_template_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  unset($form['actions']['delete']);
+  if (\Drupal::hasService('lb_plus_section_library.update_sidebar_form_alter')) {
+    \Drupal::service('lb_plus_section_library.update_sidebar_form_alter')->formAlter($form, $form_state);
+  }
+}
+
+/**
+ * Implements hook_entity_type_build().
+ */
+function lb_plus_section_library_entity_type_build(array &$entity_types) {
+  $entity_types['section_library_template']->setHandlerClass('workspace', '\Drupal\workspaces\Entity\Handler\IgnoredWorkspaceHandler');
+}

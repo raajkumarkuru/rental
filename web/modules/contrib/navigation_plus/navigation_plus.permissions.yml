@@ -1,0 +1,4 @@
+use toolbar plus edit mode: # todo Write an update hook for this to change to navigation plus.
+  title: 'Use edit mode'
+configure toolbar plus modes:
+  title: 'Configure toolbar_plus modes'

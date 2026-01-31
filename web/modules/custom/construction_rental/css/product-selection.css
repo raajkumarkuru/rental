@@ -1,0 +1,107 @@
+.product-search-section {
+  margin-bottom: 2em;
+  padding: 1.5em;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.product-search-section .form-item-search {
+  display: flex;
+  gap: 1em;
+  align-items: flex-end;
+}
+
+.product-search-section .form-item-search .form-item {
+  flex: 1;
+}
+
+.product-search-section .add-product-button {
+  margin-bottom: 0;
+}
+
+.product-info strong {
+  display: block;
+  font-size: 1.1em;
+  margin-bottom: 0.25em;
+}
+
+.product-variant {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.product-sku {
+  color: #999;
+  font-size: 0.85em;
+}
+
+.product-price {
+  font-weight: bold;
+  color: #0073aa;
+}
+
+.product-stock {
+  color: #46b450;
+}
+
+.product-stock.out-of-stock {
+  color: #dc3232;
+}
+
+.selected-products-section {
+  margin-top: 2em;
+  padding: 1.5em;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.selected-product-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 1em;
+  align-items: end;
+  padding: 1em;
+  margin-bottom: 1em;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.selected-product-item .product-info {
+  grid-column: 1;
+}
+
+.selected-product-item .form-item-quantity {
+  grid-column: 2;
+}
+
+.selected-product-item .form-item-rental-start-date {
+  grid-column: 3;
+}
+
+.selected-product-item .form-item-rental-end-date {
+  grid-column: 4;
+}
+
+.selected-product-item .remove-product-button {
+  grid-column: 5;
+}
+
+@media (max-width: 768px) {
+  .selected-product-item {
+    grid-template-columns: 1fr;
+  }
+  
+  .selected-product-item > * {
+    grid-column: 1;
+  }
+}
+
+.search-results-empty {
+  padding: 1em;
+  text-align: center;
+  color: #666;
+}
+

@@ -1,0 +1,32 @@
+.setting-details {
+  margin: 0;
+  &[open] {
+    summary {
+      margin-bottom: 1rem;
+    }
+  }
+  summary {
+    padding: 0;
+  }
+  .details-wrapper {
+    padding: 0;
+    .setting-description {
+      font-size: 16px;
+    }
+  }
+  ul.setting-list {
+    list-style-type: none;
+    margin-left: 1em;
+    li {
+      margin: 0;
+      input {
+        width: 3em;
+      }
+    }
+  }
+  .setting-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+}

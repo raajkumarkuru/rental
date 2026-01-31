@@ -1,0 +1,251 @@
+<?php
+
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionComponent;
+use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\layout_builder\Plugin\Block\InlineBlock;
+
+/**
+ * Move color settings from lb_plus to navigation_plus.
+ */
+function lb_plus_update_10000(&$sandbox) {
+  $lb_plus_config = Drupal::config('lb_plus.settings');
+  $navigation_plus_config = Drupal::configFactory()->getEditable('navigation_plus.settings');
+  $colors = $lb_plus_config->get('colors');
+  $navigation_plus_config->set('colors', $colors);
+  $navigation_plus_config->save();
+}
+
+/**
+ * Fix bad block data from old duplicate logic by re-duplicating blocks in live, workspaces, and tempstore.
+ */
+function lb_plus_update_10001(&$sandbox) {
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['max'] = 0;
+
+    // Build a master list of entities to process.
+    $database = \Drupal::database();
+    $query = $database->select('inline_block_usage', 'ibu')
+      ->fields('ibu', ['layout_entity_type', 'layout_entity_id'])
+      ->condition('layout_entity_type', 'block_content', '!=')
+      ->groupBy('layout_entity_type')
+      ->groupBy('layout_entity_id');
+
+    $sandbox['entities'] = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);;
+    $sandbox['max'] = count($sandbox['entities']);
+  }
+
+  if ($sandbox['max'] == 0) {
+    $sandbox['#finished'] = 1;
+    return t('No entities with inline blocks to process.');
+  }
+
+  $batch_size = 15;
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $database = \Drupal::database();
+
+  for ($i = 0; $i < $batch_size && $sandbox['progress'] < $sandbox['max']; $i++) {
+    $entity_data = $sandbox['entities'][$sandbox['progress']];
+    $storage = $entity_type_manager->getStorage($entity_data['layout_entity_type']);
+    $entity = $storage->load($entity_data['layout_entity_id']);
+    drupal_static_reset('decorators');
+
+    if ($entity && method_exists($entity, 'hasField') && $entity->hasField('layout_builder__layout')) {
+      // Process live workspace.
+      $cloned_entity = _lb_plus_replace_with_clone($entity);
+      $cloned_entity->save();
+
+      // Process workspace revisions for this entity.
+      if (\Drupal::moduleHandler()->moduleExists('workspaces')) {
+        $workspace_query = $database->select('workspace_association', 'wa')
+          ->fields('wa', ['target_entity_revision_id', 'workspace'])
+          ->condition('target_entity_type_id', $entity->getEntityTypeId())
+          ->condition('target_entity_id', $entity->id());
+
+        $workspace_results = $workspace_query->execute()->fetchAll();
+        foreach ($workspace_results as $workspace_result) {
+          $workspace_entity = $storage->loadRevision($workspace_result->target_entity_revision_id);
+          if ($workspace_entity && $workspace_entity->hasField('layout_builder__layout')) {
+            $cloned_workspace_entity = _lb_plus_replace_with_clone($workspace_entity);
+            $cloned_workspace_entity->save();
+          }
+        }
+      }
+
+      // Process tempstore for this entity (if edit_plus module exists).
+      if (\Drupal::moduleHandler()->moduleExists('edit_plus')) {
+        $tempstore_query = $database->select('key_value_expire', 'kve')
+          ->fields('kve')
+          ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
+          ->condition('name', '%' . $entity_data['layout_entity_type'] . '.' . $entity_data['layout_entity_id'] . '.%', 'LIKE');
+        $tempstore_results = $tempstore_query->execute()->fetchAll();
+
+        if (!empty($tempstore_results)) {
+          $tempstore = \Drupal::service('edit_plus.tempstore_repository');
+          $tempstore_entity = $tempstore->get($entity);
+          if ($tempstore_entity && $tempstore_entity->hasField('layout_builder__layout')) {
+            $cloned_tempstore_entity = _lb_plus_replace_with_clone($tempstore_entity);
+            $tempstore->set($cloned_tempstore_entity);
+          }
+        }
+      }
+    }
+
+    $sandbox['progress']++;
+  }
+
+  $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
+
+  if ($sandbox['#finished'] >= 1) {
+    return t('Successfully processed @count entities with all their revisions (live, workspace, tempstore).', ['@count' => $sandbox['progress']]);
+  }
+}
+
+/**
+ * Enable tempstore_plus module for enhanced tempstore functionality.
+ */
+function lb_plus_update_10002() {
+  // Check if tempstore_plus is available in the codebase.
+  if (!\Drupal::service('extension.list.module')->exists('tempstore_plus')) {
+    return t('tempstore_plus module not found in codebase. Please run composer update.');
+  }
+
+  // Enable tempstore_plus if not already enabled.
+  if (!\Drupal::moduleHandler()->moduleExists('tempstore_plus')) {
+    \Drupal::service('module_installer')->install(['tempstore_plus']);
+    return t('Enabled tempstore_plus module for improved tempstore handling.');
+  }
+
+  return t('tempstore_plus module is already enabled.');
+}
+
+/**
+ * Helper function to replace sections with cloned versions to fix duplicate UUIDs.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity to process.
+ * @param string $field_name
+ *   The field name containing layout sections.
+ *
+ * @return \Drupal\Core\Entity\EntityInterface
+ *   The entity with cloned sections.
+ */
+function _lb_plus_replace_with_clone(\Drupal\Core\Entity\EntityInterface $entity, $field_name = \Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage::FIELD_NAME) {
+  $sections = $entity->get($field_name)->getSections();
+  $cloned_sections = [];
+  foreach ($sections as $delta => $section) {
+    $cloned_sections[$delta] = _lb_plus_close_section($section);
+  }
+  $entity->get($field_name)->setValue($cloned_sections);
+  return $entity;
+}
+
+/**
+ * Clone section.
+ *
+ * @param \Drupal\layout_builder\Section $section
+ *   The section to clone.
+ *
+ * @return \Drupal\layout_builder\Section
+ *   The deep cloned section.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
+ */
+function _lb_plus_close_section(Section $section) {
+  $components = $section->getComponents();
+  foreach ($components as $uuid => $component) {
+    $block_plugin = $component->getPlugin();
+    $configuration = $block_plugin->getConfiguration();
+    _lb_plus_check_block_decorator($component);
+    $result = _lb_plus_clone_block($block_plugin, $configuration);
+    if ($result === FALSE) {
+      // This InlineBlock has no corresponding Block Content entity.
+      $section->removeComponent($uuid);
+    } else {
+      // Replace the component with the cloned one.
+      $cloned_component = new SectionComponent(\Drupal::service('uuid')->generate(), $component->getRegion(), ['id' => $block_plugin->getPluginId()], $component->get('additional'));
+      $cloned_component->setConfiguration($configuration);
+      $section->insertAfterComponent($uuid, $cloned_component);
+      $section->removeComponent($uuid);
+    }
+  }
+
+  return $section;
+}
+
+/**
+ * Clone block.
+ *
+ * Recursively traverses nested layouts and clones blocks and then updates
+ * the plugin configuration.
+ *
+ * @param \Drupal\Core\Block\BlockPluginInterface $block_plugin
+ *   The block plugin to clone.
+ * @param array $configuration
+ *   The plugin configuration.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
+ */
+function _lb_plus_clone_block(BlockPluginInterface $block_plugin, array &$configuration) {
+  if ($block_plugin instanceof InlineBlock) {
+    $section_storage_handler = \Drupal::service('lb_plus.section_storage_handler');
+    // Create a block_content clone.
+    $block_content = $section_storage_handler->getBlockContent($block_plugin);
+    if (is_null($block_content)) {
+      return FALSE;
+    }
+    $cloned_block_content = $block_content->createDuplicate();
+    if ($section_storage_handler->isLayoutBlock($block_plugin)) {
+      // Duplicate all the nested entities within the layouts.
+      $cloned_sections = [];
+      foreach ($block_content->layout_builder__layout->getSections() as $delta => $original_section) {
+        $cloned_sections[$delta] = _lb_plus_close_section($original_section);
+      }
+      $block_content->layout_builder__layout->setValue($cloned_sections);
+    }
+    $configuration['block_serialized'] = serialize($cloned_block_content);
+  }
+  return TRUE;
+}
+
+/**
+ * Check block decorator.
+ *
+ * @param $component
+ *   A section component.
+ *
+ * @return void
+ */
+function _lb_plus_check_block_decorator($component) {
+  if (!\Drupal::moduleHandler()->moduleExists('lb_block_decorator')) {
+    return;
+  }
+  $additional = $component->get('additional');
+  if (empty($additional['decorator_id'])) {
+    return;
+  }
+  $decorators = &drupal_static('decorators');
+  if (!is_array($decorators)) {
+    $decorators = [];
+  }
+  $uuid = $component->getUuid();
+  // Since there are blocks with the same uuid on the page, there could be
+  // block decorators that have been overridden. Once the block ID's corrected
+  // the previously overridden block decorator will become active. Let's ensure
+  // that the previously overridden block decorator (if any) uses the override
+  // so that the appearance doesn't change.
+  if (!empty($decorators[$uuid])) {
+    $current_additional = $component->get('additional');
+    $current_additional['decorator_id'] = $decorators[$uuid]['decorator_id'];
+    $current_additional['decorator_configuration'] = $decorators[$uuid]['decorator_configuration'];
+    $component->set('additional', $current_additional);
+  } else {
+    $decorators[$uuid]['decorator_id'] = $additional['decorator_id'];
+    $decorators[$uuid]['decorator_configuration'] = $additional['decorator_configuration'];
+  }
+}

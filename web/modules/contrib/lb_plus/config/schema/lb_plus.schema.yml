@@ -1,0 +1,43 @@
+lb_plus.settings:
+  type: config_object
+  label: 'Layout Builder + settings'
+  mapping:
+    contextual_links:
+      type: bool
+      label: 'Show Block Contextual links'
+
+layout_builder.section.third_party.lb_plus:
+  type: mapping
+  mapping:
+    uuid:
+      type: string
+      label: 'The UUID of the Layout Builder + entity'
+
+core.entity_view_display.*.*.*.third_party.lb_plus:
+  type: sequence
+  label: 'Layout Builder + plugin configuration'
+  sequence:
+    type: lb_plus.[%key]
+
+lb_plus.default_section:
+  type: mapping
+  label: 'Per-view-mode Layout Builder + settings'
+  mapping:
+    layout_plugin:
+      type: string
+      label: 'Layout plugin'
+    label:
+      type: string
+      label: 'Label'
+
+lb_plus.promoted_blocks:
+  type: sequence
+  label: 'Per-view-mode Layout Builder + promoted blocks'
+  sequence:
+    type: string
+
+lb_plus.block_config:
+  type: sequence
+  label: 'Per-view-mode Layout Builder + block config'
+  sequence:
+    type: mapping

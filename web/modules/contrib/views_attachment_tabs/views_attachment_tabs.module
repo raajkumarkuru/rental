@@ -1,0 +1,181 @@
+<?php
+
+/**
+ * @file
+ * Contains hooks and functions related to the Views Attachment Tabs.
+ */
+
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Template\Attribute;
+use Drupal\views_attachment_tabs\Plugin\views\display_extender\TabsExtender;
+
+/**
+ * Implements hook_theme().
+ */
+function views_attachment_tabs_theme($existing, $type, $theme, $path) {
+  return [
+    'views_view_attachment_tabs' => [
+      'base hook' => 'views_view',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK() for views_view.
+ */
+function views_attachment_tabs_theme_suggestions_views_view(array $variables) {
+  $suggestions = [];
+  /** @var \Drupal\views\ViewExecutable $view */
+  $view = $variables['view'] ?? NULL;
+  $display = $view ? $view->getDisplay() : NULL;
+  if (!$display || !$display->usesAttachments()) {
+    return $suggestions;
+  }
+
+  $extenders = $display->getExtenders();
+  $tabs_extender = $extenders['views_attachment_tabs_extender'] ?? NULL;
+  if (!($tabs_extender instanceof TabsExtender) || !$tabs_extender->isEnabled()) {
+    return $suggestions;
+  }
+  $prefix = 'views_view_attachment_tabs';
+  $view_id = $view->id();
+  $suggestions[] = $prefix;
+  $suggestions[] = $prefix . '__' . $view_id;
+  $suggestions[] = $prefix . '__' . $view_id . '__' . $view->current_display;
+
+  return $suggestions;
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for views_view_attachment_tabs.
+ */
+function views_attachment_tabs_preprocess_views_view_attachment_tabs(&$variables) {
+  /** @var \Drupal\views\ViewExecutable $view */
+  $view = $variables['view'];
+  $display = $view->getDisplay();
+  $extenders = $display->getExtenders();
+  /** @var \Drupal\views_attachment_tabs\Plugin\views\display_extender\TabsExtender $tabs_extender */
+  $tabs_extender = $extenders['views_attachment_tabs_extender'];
+
+  // Adding the main display.
+  $tabs = [
+    $view->current_display => [
+      'title' => $tabs_extender->getTabTitle(),
+      'weight' => $tabs_extender->getTabWeight(),
+      // A flag use to detect which tab is the main view.
+      'is_main_view' => TRUE,
+      'content' => !empty($variables['rows']) ? $variables['rows'] : ($variables['empty'] ?? NULL),
+    ],
+  ];
+
+  // Processing the before and after attachment to build an associative array
+  // by display id to make it easier to retrieve the attachment later.
+  $attachment_before = [];
+  $attachment_after = [];
+  foreach ($variables['attachment_before'] as $index => $attachment) {
+    if (!is_numeric($index)) {
+      continue;
+    }
+    $attachment_before[$attachment['#display_id']] = $attachment;
+    $attachment_before[$attachment['#display_id']]['#attachment_index'] = $index;
+  }
+  foreach ($variables['attachment_after'] as $index => $attachment) {
+    if (!is_numeric($index)) {
+      continue;
+    }
+    $attachment_after[$attachment['#display_id']] = $attachment;
+    $attachment_after[$attachment['#display_id']]['#attachment_index'] = $index;
+  }
+
+  // Adding attachments to the tabs.
+  foreach ($display->getAttachedDisplays() as $attached_display_id) {
+    $attached_display = $view->displayHandlers->get($attached_display_id);
+    $extenders = $attached_display->getExtenders();
+    /** @var \Drupal\views_attachment_tabs\Plugin\views\display_extender\TabsExtender $attached_tabs_extender */
+    $attached_tabs_extender = $extenders['views_attachment_tabs_extender'] ?? NULL;
+
+    if (!($attached_tabs_extender instanceof TabsExtender) || !$attached_tabs_extender->isEnabled()) {
+      continue;
+    }
+    $tabs[$attached_display_id] = [
+      'title' => $attached_tabs_extender->getTabTitle(),
+      'weight' => $attached_tabs_extender->getTabWeight(),
+    ];
+    // Remove this attachment from attachment_before or attachment_after.
+    $attachment = $attachment_before[$attached_display_id] ?? [];
+    if ($attachment) {
+      $tabs[$attached_display_id]['content'] = $attachment;
+      $tabs[$attached_display_id]['is_main_view'] = FALSE;
+      unset($variables['attachment_before'][$attachment['#attachment_index']]);
+      continue;
+    }
+    $attachment = $attachment_after[$attached_display_id] ?? [];
+    if ($attachment) {
+      $tabs[$attached_display_id]['content'] = $attachment;
+      $tabs[$attached_display_id]['is_main_view'] = FALSE;
+      unset($variables['attachment_after'][$attachment['#attachment_index']]);
+    }
+  }
+
+  // Sort the tabs data before extracting the buttons and the content.
+  uasort($tabs, '\Drupal\Component\Utility\SortArray::sortByWeightElement');
+
+  $variables['wrap_tab_navigations'] = FALSE;
+  $variables['tab_nav_tag_attributes'] = new Attribute([
+    'role' => 'navigation',
+    'class' => [],
+  ]);
+  $variables['tab_navigations'] = [];
+  $variables['tab_navigations_attributes'] = new Attribute([
+    'role' => 'tablist',
+    'class' => [],
+  ]);
+  $variables['tab_panels'] = [];
+  $variables['tab_panels_attributes'] = new Attribute([
+    'role' => 'tabpanels',
+    'class' => [],
+  ]);
+  $view_id = $view->id();
+  $tabs_counter = 1;
+  foreach ($tabs as $display_id => $tab) {
+    // In view preview these are empty if not set correctly. Let ensure that we
+    // skip this tab if this is the case.
+    if (empty($tab['content']) || empty($tab['title'])) {
+      continue;
+    }
+
+    $is_main_view = !empty($tab['is_main_view']);
+    $variables['tab_navigations'][] = [
+      'display_id' => $display_id,
+      'unique_id' => Html::getUniqueId('views-view-' . $view_id . '--' . $display_id),
+      'is_main_view' => $is_main_view,
+      'is_first_tab' => $tabs_counter === 1,
+      'wrapper_attributes' => new Attribute(['class' => []]),
+      'content' => [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#value' => $tab['title'],
+        '#attributes' => [
+          'role' => 'tab',
+          'type' => 'button',
+          'data-views-attachment-tabs' => json_encode([
+            'view_id' => $view_id,
+            'display_id' => $display_id,
+            'is_main_view' => $is_main_view ? 'true' : 'false',
+          ]),
+        ],
+      ],
+    ];
+    $variables['tab_panels'][] = [
+      'display_id' => $display_id,
+      'content' => $tab['content'],
+      'is_main_view' => $is_main_view,
+      'is_first_panel' => $tabs_counter === 1,
+      'wrapper_attributes' => new Attribute([
+        'role' => 'tabpanel',
+        'class' => [],
+      ]),
+    ];
+    $tabs_counter++;
+  }
+}

@@ -1,0 +1,16 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  lb_plus_section_library.add_template_form:
+    class: Drupal\lb_plus_section_library\Routing\LBPSLRouteSubscriber
+    arguments: ['@module_handler']
+    tags:
+      - { name: event_subscriber }
+
+  lb_plus_section_library.section_tool_indicators:
+    class: Drupal\lb_plus_section_library\EventSubscriber\SectionToolIndicators
+
+  lb_plus_section_library.should_edit_mode:
+    class: Drupal\lb_plus_section_library\EventSubscriber\ShouldEditMode

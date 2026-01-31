@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#drop-shadow-1);
+        stroke-width: .75px;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        filter: url(#drop-shadow-2);
+        stroke-width: 1.5px;
+      }
+
+      .cls-3 {
+        fill-rule: evenodd;
+      }
+    </style>
+    <filter id="drop-shadow-1" x=".056" y="-.151" width="16" height="23" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy=".5"/>
+      <feGaussianBlur result="blur" stdDeviation=".5"/>
+      <feFlood flood-color="#000" flood-opacity=".5"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-2" x="11.056" y="11.849" width="18" height="19" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy=".5"/>
+      <feGaussianBlur result="blur-2" stdDeviation=".5"/>
+      <feFlood flood-color="#000" flood-opacity=".5"/>
+      <feComposite in2="blur-2" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="mous">
+    <g>
+      <path class="cls-3" d="M3.057,3.335v11.982l2.57-2.55,2.454,5.871,2.117-1.011-2.358-5.582h3.753L3.057,3.335Z"/>
+      <path class="cls-1" d="M3.435,2.965l-.907-.926v14.55l.902-.895,2.012-1.997,2.151,5.145.215.513.502-.24,2.117-1.011.456-.218-.197-.466-2.047-4.847h4.215l-.882-.9L3.435,2.965Z"/>
+    </g>
+  </g>
+  <g id="books">
+    <path class="cls-2" d="M26.556,25.349l-1.973-9.793c-.143-.686-.815-1.126-1.501-.984-.002,0-.004,0-.006.001l-2.97.638c-.273.059-.519.208-.698.422-.234-.362-.635-.581-1.067-.581h-3.046c-.701,0-1.269.568-1.269,1.269v10.152c0,.701.568,1.269,1.269,1.269h3.046c.701,0,1.269-.568,1.269-1.269l-.054-6.125,1.68,6.383c.122.588.639,1.009,1.239,1.011.09,0,.18-.01.268-.029l2.97-.638c.684-.15.986-1.042.843-1.727Z"/>
+    <path d="M26.689,25.569l-2.106-10.012c-.143-.686-.815-1.126-1.501-.984-.002,0-.004,0-.006.001l-2.97.638c-.273.059-.519.208-.698.422-.234-.362-.635-.581-1.067-.581h-3.046c-.701,0-1.269.568-1.269,1.269v10.152c0,.701.568,1.269,1.269,1.269h3.046c.701,0,1.269-.568,1.269-1.269v-7.471l1.626,7.729c.122.588.639,1.009,1.239,1.011.09,0,.18-.01.268-.029l2.97-.638c.684-.15,1.119-.822.976-1.508ZM21.145,18.902l2.475-.532.161.761-2.475.532-.161-.761ZM21.618,21.154l2.475-.532.581,2.765-2.475.532-.581-2.765ZM23.145,16.117l.161.761-2.475.532-.161-.761,2.475-.532ZM15.549,18.861h2.538v5.076h-2.538v-5.076ZM18.087,16.576v.761h-2.538v-.761h2.538ZM15.549,26.221v-.761h2.538v.761h-2.538ZM22.674,26.173l-.161-.761,2.475-.532.161.761-2.475.532Z"/>
+  </g>
+</svg>

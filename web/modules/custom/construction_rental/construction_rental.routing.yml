@@ -1,0 +1,75 @@
+construction_rental.settings:
+  path: '/admin/config/services/construction-rental'
+  defaults:
+    _form: '\Drupal\\construction_rental\\Form\\ConstructionRentalSettingsForm'
+    _title: 'Construction Rental settings'
+  requirements:
+    _permission: 'administer site configuration'
+construction_rental.rented_out:
+  path: '/admin/construction-rental/rented-out'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\RentedOutController::rentedOutPage'
+    _title: 'Rented Out Items'
+  requirements:
+    _permission: 'view rented out items'
+
+construction_rental.product_selection:
+  path: '/construction-rental/select-products'
+  no_cache: TRUE
+  defaults:
+    _form: '\Drupal\construction_rental\Form\ProductSelectionForm'
+    _title: 'Select Products for Rental'
+  requirements:
+    _permission: 'create commerce orders'
+
+construction_rental.product_autocomplete:
+  path: '/construction-rental/product-autocomplete'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\ProductAutocompleteController::autocomplete'
+  requirements:
+    _permission: 'create commerce orders'
+
+# Stock management is now handled by Commerce Stock module.
+# Use Commerce Stock's transaction forms at /admin/commerce/config/stock/transactions1
+# or add Stock Level field to product variations for inline editing.
+
+construction_rental.return_item:
+  path: '/admin/construction-rental/return/{commerce_order_item}'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\ReturnController::returnForm'
+    _title: 'Return Item'
+  requirements:
+    _permission: 'update commerce orders'
+    commerce_order_item: \d+
+
+construction_rental.return_item_submit:
+  path: '/admin/construction-rental/return/{commerce_order_item}/submit'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\ReturnController::returnSubmit'
+    _title: 'Submit Return'
+  requirements:
+    _permission: 'update commerce orders'
+    commerce_order_item: \d+
+    _method: POST
+
+construction_rental.dashboard:
+  path: '/dashboard'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\DashboardController::dashboard'
+    _title: 'Construction Rental Dashboard'
+  requirements:
+    _permission: 'access content'
+
+construction_rental.product_search:
+  path: '/construction-rental/search-products'
+  no_cache: TRUE
+  defaults:
+    _controller: '\Drupal\construction_rental\Controller\DashboardController::productSearch'
+    _title: 'Search Products'
+  requirements:
+    _permission: 'access content'

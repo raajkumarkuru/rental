@@ -1,0 +1,15 @@
+_core:
+  default_config_hash: ijfbzDTN4CbE7Sr-6ubWzy_t1vH4OtU1doNCLssVz-4
+langcode: en-gb
+uuid: 3830511e-4335-4053-aac9-25a11b74aa32
+name: 'Building Material Stock'
+mail: info@info.com
+slogan: ''
+page:
+  403: ''
+  404: ''
+  front: 'C:/Program Files (x86)/Git/dashboard'
+admin_compact_mode: false
+weight_select_max: 100
+default_langcode: en-gb
+mail_notification: null

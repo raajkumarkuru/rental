@@ -1,0 +1,21 @@
+uuid: d3f90800-61ad-4328-ad6f-31b49f2b92b5
+langcode: en-gb
+status: true
+dependencies:
+  config:
+    - commerce_product.commerce_product_variation_type.rental_variation
+    - field.storage.commerce_product_variation.field_stock_quantity
+  module:
+    - commerce_stock_field
+id: commerce_product_variation.rental_variation.field_stock_quantity
+field_name: field_stock_quantity
+entity_type: commerce_product_variation
+bundle: rental_variation
+label: 'Stock Quantity'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: commerce_stock_level

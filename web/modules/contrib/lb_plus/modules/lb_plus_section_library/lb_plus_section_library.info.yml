@@ -1,0 +1,14 @@
+name: "Layout Builder + - Section Library"
+description: "Adds support for the Section Library module."
+type: module
+core_version_requirement: ^10 || ^11
+package: 'Page Building'
+dependencies:
+  - navigation_plus:navigation_plus
+  - section_library:section_library
+  - lb_plus:lb_plus
+
+# Information added by Drupal.org packaging script on 2025-12-08
+version: '3.3.27'
+project: 'lb_plus'
+datestamp: 1765235966

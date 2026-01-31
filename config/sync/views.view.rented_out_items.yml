@@ -1,0 +1,561 @@
+uuid: 29f68536-aa72-49c2-a6b9-fab62b6a3caa
+langcode: en-gb
+status: true
+dependencies:
+  module:
+    - commerce_order
+    - user
+_core:
+  default_config_hash: gmZP2etL_vdx3cEInCp5ShdNRIrUFs6eugLsoQt6oLY
+id: rented_out_items
+label: 'Rented Out Items'
+module: views
+description: 'View of rented out construction materials with filters'
+tag: default
+base_table: commerce_order_item
+base_field: order_item_id
+display:
+  default:
+    id: default
+    display_title: Master
+    display_plugin: default
+    position: 0
+    display_options:
+      title: 'Rented Out Items'
+      fields:
+        order_id:
+          id: order_id
+          table: commerce_order_item_field_data
+          field: order_id
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order
+          entity_field: order_number
+          plugin_id: commerce_order_number
+          label: 'Order Number'
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: commerce_order_number
+          settings:
+            link_to_order: true
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        purchased_entity:
+          id: purchased_entity
+          table: commerce_order_item_field_data
+          field: purchased_entity
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: purchased_entity
+          plugin_id: field
+          label: Product
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_entity_view
+          settings:
+            view_mode: default
+            link: false
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_rented_quantity:
+          id: field_rented_quantity
+          table: commerce_order_item__field_rented_quantity
+          field: field_rented_quantity
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_rented_quantity
+          plugin_id: field
+          label: 'Rented Quantity'
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: number_decimal
+          settings:
+            thousand_separator: ''
+            decimal_separator: .
+            scale: 2
+            prefix_suffix: true
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_returned_quantity:
+          id: field_returned_quantity
+          table: commerce_order_item__field_returned_quantity
+          field: field_returned_quantity
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_returned_quantity
+          plugin_id: field
+          label: 'Returned Quantity'
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: number_decimal
+          settings:
+            thousand_separator: ''
+            decimal_separator: .
+            scale: 2
+            prefix_suffix: true
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_rental_status:
+          id: field_rental_status
+          table: commerce_order_item__field_rental_status
+          field: field_rental_status
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_rental_status
+          plugin_id: field
+          label: Status
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: list_default
+          settings: {  }
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_rental_start_date:
+          id: field_rental_start_date
+          table: commerce_order_item__field_rental_start_date
+          field: field_rental_start_date
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_rental_start_date
+          plugin_id: field
+          label: 'Start Date'
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: datetime_default
+          settings:
+            timezone_override: ''
+            format_type: medium
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        field_rental_end_date:
+          id: field_rental_end_date
+          table: commerce_order_item__field_rental_end_date
+          field: field_rental_end_date
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_rental_end_date
+          plugin_id: field
+          label: 'End Date'
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: value
+          type: datetime_default
+          settings:
+            timezone_override: ''
+            format_type: medium
+          group_column: value
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+        order_id_1:
+          id: order_id_1
+          table: commerce_order_item_field_data
+          field: order_id
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order
+          entity_field: uid
+          plugin_id: commerce_order_customer
+          label: Customer
+          exclude: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_entity_view
+          settings:
+            view_mode: compact
+            link: true
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+      pager:
+        type: full
+        options:
+          offset: 0
+          pagination_heading_level: h4
+          items_per_page: 25
+          total_pages: null
+          id: 0
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+            tags: {  }
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Apply
+          reset_button: false
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
+      access:
+        type: perm
+        options:
+          perm: 'view rented out items'
+      cache:
+        type: tag
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          plugin_id: text_custom
+          content: 'No rented items found.'
+          tokenize: false
+      sorts:
+        created:
+          id: created
+          table: commerce_order_item_field_data
+          field: created
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: created
+          plugin_id: date
+          order: DESC
+          expose:
+            label: ''
+          exposed: false
+          granularity: second
+      arguments: {  }
+      filters:
+        order_id:
+          id: order_id
+          table: commerce_order_item_field_data
+          field: order_id
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order
+          entity_field: uid
+          plugin_id: commerce_order_customer
+          operator: in
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: order_id_op
+            label: Customer
+            description: ''
+            use_operator: false
+            operator: order_id_op
+            identifier: customer
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        field_rental_status:
+          id: field_rental_status
+          table: commerce_order_item__field_rental_status
+          field: field_rental_status
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: field_rental_status
+          plugin_id: field
+          operator: in
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: field_rental_status_op
+            label: Status
+            description: ''
+            use_operator: false
+            operator: field_rental_status_op
+            identifier: status
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        purchased_entity:
+          id: purchased_entity
+          table: commerce_order_item_field_data
+          field: purchased_entity
+          relationship: none
+          admin_label: ''
+          entity_type: commerce_order_item
+          entity_field: purchased_entity
+          plugin_id: field
+          operator: in
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: purchased_entity_op
+            label: Product
+            description: ''
+            use_operator: false
+            operator: purchased_entity_op
+            identifier: product
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+      style:
+        type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          uses_fields: true
+          columns: {  }
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: false
+          caption: ''
+          description: ''
+      row:
+        type: fields
+        options:
+          default_field_elements: true
+          inline: {  }
+          separator: ''
+          hide_empty: false
+      query:
+        type: views_query
+        options:
+          query_tags: {  }
+      relationships: {  }
+      use_ajax: false
+      group_by: false
+      use_more: false
+      use_more_always: false
+      link_display: ''
+      header: {  }
+      footer: {  }
+      display_extenders: {  }
+      use_pager: true
+      distinct: false
+      query_comment: ''
+      use_additional_arguments: false
+      additional_arguments: ''
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 1
+    display_options:
+      display_extenders: {  }
+      path: admin/construction-rental/rented-out
+      menu:
+        type: normal
+        title: 'Rented Out Items'
+        description: 'View and manage rented out construction materials'
+        weight: 10
+        menu_name: commerce.orders
+      tab_options:
+        type: tab
+        title: 'Rented Out Items'
+        description: ''
+        weight: 10

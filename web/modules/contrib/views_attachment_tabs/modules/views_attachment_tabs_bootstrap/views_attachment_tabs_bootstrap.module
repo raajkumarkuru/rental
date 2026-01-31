@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * @file
+ * Module implementation for Views Attachments as Tabs for bootstrap.
+ */
+
+use Drupal\Component\Utility\Html;
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_preprocess_HOOK() for views_view_attachment_tabs.
+ */
+function views_attachment_tabs_bootstrap_preprocess_views_view_attachment_tabs(array &$variables) {
+  $view = $variables['view'] ?? NULL;
+  if (!$view instanceof ViewExecutable) {
+    return;
+  }
+
+  $view_id = $view->id();
+  $variables['tab_navigations_attributes']['class'][] = 'nav';
+  $variables['tab_navigations_attributes']['class'][] = 'nav-tabs';
+  $variables['tab_navigations_attributes']['class'][] = 'mb-3';
+  $variables['tab_panels_attributes']['class'][] = 'tab-content';
+  foreach ($variables['tab_navigations'] as $index => &$tab_navigation) {
+    $id = $tab_navigation['unique_id'];
+    $panel_id = Html::getId($id . '--tab-panel--' . $index);
+    $tab_id = Html::getId($id . '--tab-nav--' . $index);
+
+    $tab_navigation['wrapper_attributes']['class'][] = 'nav-item';
+    $tab_navigation['wrapper_attributes']['role'] = 'presentation';
+
+    $tab_navigation['content']['#attributes']['class'][] = 'nav-link';
+    $tab_navigation['content']['#attributes']['id'] = $tab_id;
+    $tab_navigation['content']['#attributes']['data-toggle'] = 'tab';
+    $tab_navigation['content']['#attributes']['data-bs-toggle'] = 'tab';
+    $tab_navigation['content']['#attributes']['data-target'] = '#' . $panel_id;
+    $tab_navigation['content']['#attributes']['data-bs-target'] = '#' . $panel_id;
+    $tab_navigation['content']['#attributes']['role'] = 'tab';
+    $tab_navigation['content']['#attributes']['aria-controls'] = $panel_id;
+
+    $variables['tab_panels'][$index]['wrapper_attributes']['class'][] = 'tab-pane';
+    $variables['tab_panels'][$index]['wrapper_attributes']['class'][] = 'fade';
+    $variables['tab_panels'][$index]['wrapper_attributes']['id'] = $panel_id;
+    $variables['tab_panels'][$index]['wrapper_attributes']['aria-labelledby'] = $tab_id;
+
+    if (!empty($tab_navigation['is_first_tab'])) {
+      $tab_navigation['content']['#attributes']['class'][] = 'active';
+      $tab_navigation['content']['#attributes']['aria-selected'] = 'true';
+      $variables['tab_panels'][$index]['wrapper_attributes']['class'][] = 'show';
+      $variables['tab_panels'][$index]['wrapper_attributes']['class'][] = 'active';
+    }
+    else {
+      $tab_navigation['content']['#attributes']['aria-selected'] = 'false';
+    }
+  }
+}

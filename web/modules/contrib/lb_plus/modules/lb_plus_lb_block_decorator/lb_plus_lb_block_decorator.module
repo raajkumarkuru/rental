@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for LB Plus LB Block Decorator module.
+ */
+
+/**
+ * Implements hook_contextual_links_alter().
+ */
+function lb_plus_lb_block_decorator_contextual_links_alter(array &$links, $group, array $route_parameters) {
+  if (!empty($links['lb_block_decorator'])) {
+    $links['lb_block_decorator']['localized_options']['supports_nested_layouts'] = 'true';
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function lb_plus_lb_block_decorator_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'contextual_links_alter') {
+    unset($implementations['lb_plus_lb_block_decorator']);
+    $implementations = array_merge(['lb_plus_lb_block_decorator' => FALSE], $implementations);
+  }
+}
+

@@ -1,0 +1,5 @@
+construction_rental.rented_out:
+  route_name: construction_rental.rented_out
+  base_route: commerce.orders
+  title: 'Rented Out Items'
+

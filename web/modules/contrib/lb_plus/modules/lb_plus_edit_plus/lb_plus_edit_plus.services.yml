@@ -1,0 +1,11 @@
+services:
+  lb_plus_edit_plus.route_subscriber:
+    class: Drupal\lb_plus_edit_plus\EventSubscriber\LbPlusEditPlusRouteSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  lb_plus_edit_plus.section_component_build_render_array:
+    class: Drupal\lb_plus_edit_plus\EventSubscriber\SectionComponentBuildRenderArray
+    arguments: [ '@current_user', '@lb_plus.section_storage_handler' ]
+    tags:
+      - { name: event_subscriber }

@@ -1,0 +1,9 @@
+lb_plus.settings.configure_default_section:
+  title: 'Default Layout'
+  route_name: lb_plus.settings.configure_default_section
+  base_route: lb_plus.settings.configure_default_section
+
+lb_plus.settings.promoted_blocks:
+  title: 'Promoted Blocks'
+  route_name: lb_plus.settings.promoted_blocks
+  base_route: lb_plus.settings.configure_default_section

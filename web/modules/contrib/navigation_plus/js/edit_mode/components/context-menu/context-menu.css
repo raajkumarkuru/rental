@@ -1,0 +1,57 @@
+.draggable-block:has(.np-context-menu) {
+  position: relative;
+}
+.item-list:has(.np-context-menu) {
+  position: absolute;
+  top: 0;
+  left: .5em;
+  &:before {
+    content: url("../../../../assets/dots.svg");
+    cursor: pointer;
+    height: 28px;
+    width: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .np-context-menu {
+    position: absolute;
+    top: 1.5em;
+    left: 0;
+    background: white;
+    border: 1px solid var(--drupal-admin-color-gray-600, #b4bdd1);
+    border-radius: .5em;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    li {
+      margin: 0;
+      padding: .25em 1em;
+    }
+  }
+  &.active {
+    .np-context-menu {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+    &:before {
+      content: url("../../../../assets/x.svg");
+    }
+  }
+}
+
+.navigation-plus-sidebar {
+  &:has(.left-sidebar) {
+    .np-context-menu {
+      z-index: calc(var(--navigation-plus-left-sidebar-z-index) + 1);
+    }
+  }
+  &:has(.right-sidebar) {
+    .np-context-menu {
+      z-index: calc(var(--navigation-plus-right-sidebar-z-index) + 1);
+    }
+  }
+}

@@ -1,0 +1,6 @@
+services:
+  user_migration.commands:
+    class: Drupal\user_migration\Commands\UserMigrationCommands
+    arguments: ['@database']
+    tags:
+      - { name: drush.command }

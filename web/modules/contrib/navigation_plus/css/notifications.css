@@ -1,0 +1,131 @@
+#notifications {
+  padding: 0;
+}
+
+/**
+ * Notifications sidebar content
+ */
+.notifications-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+.notifications-content h3 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--admin-toolbar-color-text, #1c2126);
+}
+
+.header-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1em 1em 0 1em;
+}
+
+/**
+ * Clear button
+ */
+#clear-notifications {
+  padding: 0.5rem 1rem;
+  background-color: var(--admin-toolbar-color-white, #fff);
+  border: 1px solid var(--drupal-admin-color-gray-600, #b4bdd1);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-toolbar-color-text, #1c2126);
+  transition: background-color 0.2s ease;
+}
+
+#clear-notifications:hover {
+  background-color: var(--drupal-admin-color-gray-100, #f3f4f6);
+}
+
+#clear-notifications:active {
+  background-color: var(--drupal-admin-color-gray-200, #e5e7eb);
+}
+
+/**
+ * Notifications list
+ */
+.notifications-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/**
+ * Empty state
+ */
+.notifications-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--drupal-admin-color-gray-600, #6b7280);
+  font-size: 0.875rem;
+}
+
+/**
+ * Notification items
+ */
+.notification-item {
+  padding: 1em;
+  background-color: var(--admin-toolbar-color-white, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid;
+}
+
+.notification-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Status message (blue/green) */
+.notification-item--status {
+  border-left-color: var(--drupal-admin-color-success, #28a745);
+  background-color: #f0f9f4;
+}
+
+/* Warning message (yellow/orange) */
+.notification-item--warning {
+  border-left-color: var(--drupal-admin-color-warning, #ffc107);
+  background-color: #fffbf0;
+}
+
+/* Error message (red) */
+.notification-item--error {
+  border-left-color: var(--drupal-admin-color-error, #dc3545);
+  background-color: #fef2f2;
+}
+
+/* Info message (blue) */
+.notification-item--info {
+  border-left-color: var(--drupal-admin-color-info, #17a2b8);
+  background-color: #f0f9ff;
+}
+
+/**
+ * Notification item content
+ */
+.notification-item__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.notification-item__message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--admin-toolbar-color-text, #1c2126);
+  word-wrap: break-word;
+}
+
+.notification-item__time {
+  font-size: 0.75rem;
+  color: var(--drupal-admin-color-gray-600, #6b7280);
+}

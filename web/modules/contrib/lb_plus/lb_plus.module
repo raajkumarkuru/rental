@@ -1,0 +1,147 @@
+<?php
+
+use Drupal\Core\Breadcrumb\Breadcrumb;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Render\MarkupInterface;
+use Drupal\lb_plus\Form\OverridesEntityForm;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\lb_plus\Form\EntityViewDisplayForm;
+use Drupal\lb_plus\InlineBlockEntityOperations;
+
+/**
+ * Implements hook_element_plugin_alter().
+ */
+function lb_plus_element_plugin_alter(array &$definitions) {
+  $definitions['layout_builder']['class'] = 'Drupal\lb_plus\Element\LayoutBuilderPlus';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lb_plus_form_entity_view_display_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::classResolver(EntityViewDisplayForm::class)->formAlter($form, $form_state);
+}
+
+/**
+ * Implements hook_system_breadcrumb_alter().
+ */
+function lb_plus_system_breadcrumb_alter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context) {
+  \Drupal::classResolver(EntityViewDisplayForm::class)->breadCrumbAlter($breadcrumb, $route_match, $context);
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function lb_plus_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::classResolver(OverridesEntityForm::class)->formAlter($form, $form_state, $form_id);
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter().
+ */
+function lb_plus_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+  if (\Drupal::routeMatch()->getRouteName() === 'lb_plus.contextual_link.layout_block.edit') {
+    $suggestions[] = 'page__lb_plus_layout_block';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function lb_plus_theme($existing, $type, $theme, $path) {
+  return [
+    'page__lb_plus_layout_block' => [
+      'render element' => 'page',
+      'preprocess functions' => [
+        'template_preprocess',
+        'template_preprocess_page',
+        'contextual_preprocess',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_contextual_links_alter().
+ */
+function lb_plus_contextual_links_alter(array &$links, $group, array $route_parameters) {
+  // Remove layout builders contextual links in favor of our own that are aware
+  // of nested section storages. Instead of doing this we could loaded our own
+  // namespaced contextual links here, but then other modules wouldn't be able
+  // to add their own contextual links.
+  foreach([
+    'layout_builder_block_update',
+    'layout_builder_block_move',
+    'layout_builder_block_remove',
+    'layout_builder_block_visibility',
+  ] as $layout_builder_contextual_link) {
+    if (!empty($links[$layout_builder_contextual_link])) {
+      unset($links[$layout_builder_contextual_link]);
+    }
+  }
+
+  if (isset($links['lb_plus.block_update'])) {
+    $links['lb_plus.block_update']['localized_options']['attributes']['data-dialog-type'] = 'dialog';
+    $links['lb_plus.block_update']['localized_options']['attributes']['data-dialog-options'] = Json::encode([
+      'width' => 1024,
+      'height' => 'auto',
+      'target' => 'layout-builder-modal',
+      'autoResize' => TRUE,
+      'modal' => TRUE,
+    ]);
+  }
+
+  // This contextual menu is inside a nested layout. Exclude any menu items
+  // that don't support nested layouts. Modules need to opt into this by adding
+  // supports_nested_layouts: 'true' to their module.links.contextual.yml file.
+  // @see lb_plus.links.contextual.yml
+  if (!empty($route_parameters['nested_storage_path'])) {
+    foreach ($links as $key => $link) {
+      if (empty($link['localized_options']['supports_nested_layouts'])) {
+        unset($links[$key]);
+      }
+    }
+  }
+
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function lb_plus_module_implements_alter(&$implementations, $hook) {
+  if ($hook === 'entity_presave') {
+    // Replace layout_builder_entity_presave with lb_plus_entity_presave. It
+    // does the same thing, but let's have all the inline_block_usage things
+    // here or clarity's sake.
+    unset($implementations['layout_builder']);
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function lb_plus_entity_presave(EntityInterface $entity) {
+  if (\Drupal::moduleHandler()->moduleExists('block_content')) {
+    \Drupal::classResolver(InlineBlockEntityOperations::class)->handlePreSave($entity);
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function lb_plus_entity_insert(EntityInterface $entity) {
+  if (\Drupal::moduleHandler()->moduleExists('block_content')) {
+    \Drupal::classResolver(InlineBlockEntityOperations::class)->trackInlineBlockUsage($entity);
+  }
+}
+
+/**
+ * Implements hook_entity_update().
+ */
+function lb_plus_entity_update(EntityInterface $entity) {
+  if (\Drupal::moduleHandler()->moduleExists('block_content')) {
+    \Drupal::classResolver(InlineBlockEntityOperations::class)->trackInlineBlockUsage($entity);
+  }
+}

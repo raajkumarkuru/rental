@@ -1,0 +1,13 @@
+type: module
+name: 'Views Attachments as Tabs Bootstrap'
+description: 'Display views attachments as tabs using bootstraps 4 or 5 api.'
+package: Views
+core_version_requirement: ^9  || ^10 || ^11
+
+dependencies:
+  - views_attachment_tabs:views_attachment_tabs
+
+# Information added by Drupal.org packaging script on 2025-03-19
+version: '1.1.2'
+project: 'views_attachment_tabs'
+datestamp: 1742416050

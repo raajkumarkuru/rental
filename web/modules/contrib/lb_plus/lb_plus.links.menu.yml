@@ -1,0 +1,6 @@
+lb_plus.settings:
+  title: Layout Builder +
+  description: Configure Layout Builder + to look good with your theme.
+  parent: system.admin_config_content
+  route_name: lb_plus.settings
+  weight: 10

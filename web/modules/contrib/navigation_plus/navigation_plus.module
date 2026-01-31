@@ -1,0 +1,248 @@
+<?php
+
+/*
+ * @file
+ * Hooks for the Navigation + module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function navigation_plus_preprocess_field(&$variables) {
+  Drupal::service('navigation_plus.ui')->wrapAndAttributeFieldsForEditing($variables);
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function navigation_plus_preprocess_navigation(&$variables) {
+  Drupal::service('navigation_plus.ui')->buildToolbars($variables);
+}
+
+/**
+ * Implements hook_page_top().
+ */
+function navigation_plus_page_top(array &$page_top) {
+  \Drupal::service('navigation_plus.ui')->buildPageTop($page_top);
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function navigation_plus_preprocess_top_bar(&$variables) {
+  \Drupal::service('navigation_plus.ui')->preprocessTopBar($variables);
+}
+
+/**
+ * Implements hook_entity_view_alter().
+ */
+function navigation_plus_entity_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  \Drupal::service('navigation_plus.entity_view_alter')->alter($build, $entity, $display);
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function navigation_plus_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  \Drupal::service('navigation_plus.form_alter.bundle_edit')->formAlter($form, $form_state);
+
+  if (in_array($form_id, ['wse_workspace_switcher_form', 'workspace_switcher_form'])) {
+    $form['#submit'][] = 'navigation_plus_form_workspace_switcher_form_submit';
+  }
+}
+
+/**
+ * Workspace switcher submission handler.
+ */
+function navigation_plus_form_workspace_switcher_form_submit(&$form, FormStateInterface $form_state) {
+  $redirect_destination = \Drupal::destination()->get();
+  // Change the redirect destination back to the canonical page when the
+  // destination was navigation_plus.load_editable_page (our AJAX re-loader).
+  if (str_contains($redirect_destination, '/navigation-plus/load-editable-page/')) {
+    $pieces = explode('/', $redirect_destination);
+    $entity = \Drupal::entityTypeManager()->getStorage($pieces[3])->load($pieces[4]);
+    $form_state->setRedirectUrl($entity->toUrl());
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function navigation_plus_entity_insert(EntityInterface $entity) {
+  \Drupal::service('navigation_plus.event_subscriber.initial_mode')->prepare($entity);
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function navigation_plus_element_info_alter(array &$types) {
+  if (isset($types['status_messages'])) {
+    // Replace the default pre_render callback with our own.
+    // This allows us to intercept status messages when in Edit Mode.
+    $types['status_messages']['#pre_render'] = [
+      'Drupal\navigation_plus\Message\EditModeHtmlMessages::preRender',
+    ];
+  }
+}
+
+/**
+ * Implements hook_entity_build_defaults_alter().
+ */
+function navigation_plus_entity_build_defaults_alter(array &$build, EntityInterface $entity, $view_mode) {
+  // Flag that the entity needs a wrapper. This wrapper is used to update the page
+  // once an action happens. e.g. changing a value, adding a new field to the
+  // page, switching to a new tool...
+  // @see EntityTemplate->onTwigRenderTemplate()
+  // @see EditPlusFormTrait->addEmptyField()
+  $id = navigation_plus_entity_identifier($entity);
+  $build['#navigation_plus_entity'] = [
+    'entity_type' => $entity->getEntityTypeId(),
+    'entity_id' => $id,
+    'bundle' => $entity->bundle(),
+    // Record what the actual view mode was when this item was built.
+    'view_mode' => $view_mode,
+  ];
+  \Drupal::service('navigation_plus.view_mode_tracker')->setViewMode($entity->getEntityTypeId(), $id, $view_mode);
+}
+
+function navigation_plus_entity_identifier(EntityInterface $entity) {
+  // @todo Can we just use uuid for everything?
+  return $entity->id() ?? $entity->uuid();
+}
+
+/**
+ * Navigation plus get view mode.
+ *
+ * Falls back to a view mode that exists for this entity.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ * @param string|NULL $view_mode
+ *   The perspective view mode.
+ *
+ * @return string
+ *   The view mode.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _navigation_plus_get_view_mode(EntityInterface $entity, string $view_mode = 'full'): string {
+  static $cached_view_modes;
+  $original_id = $entity->getEntityTypeId() . "." . $entity->bundle() . "." . $view_mode;
+
+  if (!empty($cached_view_modes[$original_id])) {
+    return $cached_view_modes[$original_id];
+  }
+
+  $view_display = _navigation_plus_get_entity_view_display($entity, $view_mode);
+  $cached_view_modes[$original_id] = !empty($view_display) ? $view_display->getMode() : 'default';
+  return $cached_view_modes[$original_id];
+}
+
+/**
+ * Get entity view display.
+ *
+ * Loads the actual entity view display since
+ * $this->entityDisplayRepository->getViewDisplay($entity->getEntityTypeId(),
+ * $entity->bundle(), $view_mode) will always return a display.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity.
+ * @param string $view_mode
+ *   The view mode.
+ *
+ * @return \Drupal\Core\Entity\Display\EntityViewDisplayInterface
+ *   The entity view display for this entity and view mode or the default.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _navigation_plus_get_entity_view_display(EntityInterface $entity, string $view_mode = 'full'): EntityViewDisplayInterface {
+  $original_id = $entity->getEntityTypeId() . "." . $entity->bundle() . "." . $view_mode;
+  $storage = \Drupal::entityTypeManager()->getStorage('entity_view_display');
+  $view_display = $storage->load($original_id);
+  if (empty($view_display)) {
+    $default_id = $entity->getEntityTypeId() . "." . $entity->bundle() . ".default";
+    $view_display = $storage->load($default_id);
+  }
+  return $view_display;
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function navigation_plus_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'user') {
+    $fields['navigation_plus_settings'] = BaseFieldDefinition::create('map')
+      ->setLabel(t('Navigation + Settings'))
+      ->setDescription(t('Settings for Navigation + hotkeys.'))
+      ->setDefaultValue([]);
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function navigation_plus_theme_registry_alter(&$theme_registry) {
+  $path = Drupal::service('module_handler')->getModule('navigation_plus')->getPath();
+  $theme_registry['top_bar']['path'] = "$path/templates";
+
+  // Ensure our theme hooks run last.
+  foreach (['navigation', 'top_bar'] as $hook) {
+    if (!empty($theme_registry[$hook]['preprocess functions'])) {
+      $preprocess_function = "navigation_plus_preprocess_$hook";
+      $theme_registry[$hook]['preprocess functions'] = array_diff($theme_registry[$hook]['preprocess functions'], [$preprocess_function]);
+      $theme_registry[$hook]['preprocess functions'][] = $preprocess_function;
+    }
+  }
+
+  // As a workaround, let's let users flag that module defined templates are okay.
+  // @see https://www.drupal.org/project/navigation_plus/issues/3548969
+  foreach ($theme_registry as $hook => &$hook_info) {
+    if (!empty($hook_info['use_twig_events'])) {
+      $hook_info['type'] = 'theme_engine';
+    }
+  }
+}
+
+/**
+ * Implode an array with a separator and a final separator.
+ *
+ * @param array $pieces
+ *   The pieces to implode together.
+ * @param string $separator
+ *   The separator used on all but the last pieces.
+ * @param string $final_separator
+ *   The separator used on the final two pieces.
+ *
+ * @return string
+ *   The imploded string.
+ */
+function navigation_plus_implode(array $pieces, $separator = ', ', $final_separator = ' and '): string {
+  $last = array_pop($pieces);
+  $first = implode($separator, $pieces);
+  $both = array_filter([$first, $last]);
+  return implode($final_separator, $both);
+}
+
+function navigation_plus_save_outside_workspace(EntityInterface $entity) {
+  $callback = function() use ($entity) {
+    $entity->save();
+  };
+  if (\Drupal::moduleHandler()->moduleExists('workspaces')) {
+    $manager = \Drupal::service('workspaces.manager');
+    if ($manager->hasActiveWorkspace()) {
+      $manager->executeOutsideWorkspace($callback);
+      return;
+    }
+  }
+  $callback();
+}
+

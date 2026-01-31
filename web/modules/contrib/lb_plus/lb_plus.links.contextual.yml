@@ -1,0 +1,42 @@
+lb_plus.block_update:
+  title: 'Configure'
+  route_name: 'lb_plus.contextual_link.update_block'
+  group: 'layout_builder_block'
+  options:
+    supports_nested_layouts: 'true'
+    attributes:
+      class: ['use-ajax']
+  weight: 100
+
+lb_plus.block_duplicate:
+  title: 'Duplicate block'
+  group: 'layout_builder_block'
+  route_name: 'lb_plus.contextual_link.duplicate_block'
+  options:
+    supports_nested_layouts: 'true'
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: modal
+  weight: 110
+
+lb_plus.block_remove:
+  title: 'Remove block'
+  route_name: 'lb_plus.contextual_link.remove_block'
+  group: 'layout_builder_block'
+  options:
+    supports_nested_layouts: 'true'
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: modal
+  weight: 130
+
+lb_plus.layout_block_edit:
+  title: 'Edit layout'
+  group: 'lb_plus_layout_block'
+  route_name: 'lb_plus.contextual_link.layout_block.edit'
+  options:
+    supports_nested_layouts: 'true'
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: modal
+  weight: 120

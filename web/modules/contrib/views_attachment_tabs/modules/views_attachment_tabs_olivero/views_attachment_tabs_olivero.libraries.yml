@@ -1,0 +1,8 @@
+tabs:
+  version: VERSION
+  js:
+    js/tabs.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - olivero/tabs

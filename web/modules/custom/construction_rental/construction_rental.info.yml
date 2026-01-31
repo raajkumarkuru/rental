@@ -1,0 +1,17 @@
+name: Construction Rental
+type: module
+description: 'Construction materials rental system using Drupal Commerce'
+package: Custom
+core_version_requirement: ^10 || ^11
+dependencies:
+  - commerce:commerce
+  - commerce:commerce_product
+  - commerce:commerce_order
+  - commerce:commerce_payment
+  - commerce_stock:commerce_stock
+  - drupal:field
+  - drupal:options
+  - drupal:datetime
+  - drupal:views
+  - drupal:token
+

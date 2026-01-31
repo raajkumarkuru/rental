@@ -1,0 +1,56 @@
+navigation_plus.settings:
+  type: config_object
+  label: 'Navigation + settings'
+  mapping:
+    colors:
+      type: sequence
+      label: 'Colors'
+      sequence:
+        type: string
+        label: 'Color'
+
+node.type.*.third_party.navigation_plus:
+  type: navigation_plus.bundle.options
+  label: 'Navigation + Mode plugin configuration'
+block_content.type.*.third_party.navigation_plus:
+  type: navigation_plus.bundle.options
+  label: 'Navigation + Mode plugin configuration'
+navigation_plus.bundle.options:
+  type: mapping
+  label: 'Navigation Plus Options'
+  mapping:
+    initial_mode:
+      type: string
+      label: 'Initial mode'
+    status:
+      type: sequence
+      label: 'Enabled modes'
+      orderby: key
+      sequence:
+        type: boolean
+        label: 'Mode status'
+    modes:
+      type: sequence
+      label: 'Mode configurations'
+      orderby: key
+      sequence:
+        type: navigation_plus.mode.[%key]
+        label: 'Mode configuration'
+navigation_plus.mode.plugin:
+  type: mapping
+  label: 'Mode'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+      constraints:
+        PluginExists:
+          manager: plugin.manager.modes
+          interface: '\Drupal\navigation_plus\ModeInterface'
+navigation_plus.mode.edit:
+  type: navigation_plus.mode.plugin
+  label: 'Edit Mode'
+  mapping:
+    default_tool:
+      type: string
+      label: 'Default tool'

@@ -1,0 +1,19 @@
+uuid: df9d9147-e9d1-4f50-a29c-dc1cc51a3fc3
+langcode: en-gb
+status: true
+dependencies:
+  module:
+    - commerce_product
+    - commerce_stock_field
+id: commerce_product_variation.field_stock_quantity
+field_name: field_stock_quantity
+entity_type: commerce_product_variation
+type: commerce_stock_level
+settings: {  }
+module: commerce_stock_field
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,5 @@
+name: 'User Migration'
+type: module
+description: 'Provides Drush commands to migrate users, roles, and permissions.'
+core_version_requirement: ^9 || ^10
+package: Custom

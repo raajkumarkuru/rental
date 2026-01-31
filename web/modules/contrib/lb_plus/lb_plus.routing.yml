@@ -1,0 +1,200 @@
+lb_plus.settings:
+  path: '/admin/config/content/layout-builder-plus'
+  defaults:
+    _title: 'LB+ Settings'
+    _form: 'Drupal\lb_plus\Form\SettingsForm'
+  requirements:
+    _permission: 'administer layout builder + configuration'
+
+lb_plus.settings.configure_default_section:
+  path: '/admin/structure/types/manage/{entity}/default-layout-section'
+  defaults:
+    _title: 'Configure default section'
+    _form: 'Drupal\lb_plus\Form\ConfigureDefaultSectionForm'
+  options:
+    parameters:
+      entity:
+        type: entity:entity_view_display
+  requirements:
+    _permission: 'administer layout builder + configuration'
+
+lb_plus.settings.promoted_blocks:
+  path: '/admin/structure/types/manage/{entity}/promoted-blocks'
+  defaults:
+    _title: 'Promoted blocks'
+    _form: 'Drupal\lb_plus\Form\PromotedBlocksForm'
+  options:
+    parameters:
+      entity:
+        type: entity:entity_view_display
+  requirements:
+    _permission: 'promote layout builder + blocks'
+
+lb_plus.contextual_link.update_block:
+  path: '/lb-plus/update/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}/{nested_storage_path}'
+  defaults:
+    _form: '\Drupal\lb_plus\Form\UpdateBlockForm'
+    _title: 'Configure block'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.contextual_link.duplicate_block:
+  path: '/lb-plus/duplicate/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}/{nested_storage_path}'
+  defaults:
+    _title: 'Duplicate Block'
+    _controller: '\Drupal\lb_plus\Controller\DuplicateBlock::duplicate'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.contextual_link.remove_block:
+  path: '/lb-plus/remove/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}/{nested_storage_path}'
+  defaults:
+    _form: '\Drupal\lb_plus\Form\RemoveBlockForm'
+    delta: null
+    region: null
+    uuid: null
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.contextual_link.layout_block.edit:
+  path: '/lb-plus/edit/block/layout/{section_storage_type}/{section_storage}/{nested_storage_path}'
+  defaults:
+    _title: 'Edit Block Layout'
+    _controller: '\Drupal\lb_plus\Controller\EditBlockLayout::nestedLayoutBuilderUIAjaxCallback'
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.admin_button.configure_section:
+  path: '/lb-plus/configure/section/{section_storage_type}/{section_storage}/{delta}/{nested_storage_path}'
+  defaults:
+    _title: 'Configure section'
+    _form: '\Drupal\lb_plus\Form\ConfigureSectionForm'
+    plugin_id: null
+    section_delta: null
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.tool_indicator.remove_section:
+  path: '/lb-plus/remove/section/{section_storage_type}/{section_storage}/{delta}/{nested_storage_path}'
+  defaults:
+    _form: '\Drupal\lb_plus\Form\RemoveSectionForm'
+    delta: null
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.tool_indicator.choose_layout:
+  path: '/lb-plus/layout-options/{section_storage_type}/{section_storage}/{section_delta}/{nested_storage_path}'
+  defaults:
+    _title: 'Change layout'
+    _controller: '\Drupal\lb_plus\Controller\ChangeLayout::chooseLayout'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.load_place_block_sidebar:
+  path: '/lb-plus/load-place-block-sidebar/{section_storage_type}/{section_storage}'
+  defaults:
+    _title: 'Layout Builder'
+    _controller: '\Drupal\lb_plus\Controller\PlaceBlockSidebar::update'
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.place_block:
+  path: '/lb-plus/place-block/{section_storage_type}/{section_storage}/{nested_storage_path}'
+  defaults:
+    _title: 'Placing block'
+    _controller: '\Drupal\lb_plus\Controller\DropZones::placeBlock'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.move_section_drop_zone:
+  path: '/lb-plus/move-section/{section_storage_type}/{section_storage}'
+  defaults:
+    _title: 'Drop Zone'
+    _controller: '\Drupal\lb_plus\Controller\DropZones::moveSection'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.add_section_drop_zone:
+  path: '/lb-plus/add-empty-section/{section_storage_type}/{section_storage}/{nested_storage_path}'
+  defaults:
+    _title: 'Drop Zone'
+    _controller: '\Drupal\lb_plus\Controller\DropZones::addEmptySection'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.move_block:
+  path: '/lb-plus/move/block/{section_storage_type}/{section_storage}'
+  defaults:
+    _controller: '\Drupal\lb_plus\Controller\DropZones::moveBlock'
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
+
+lb_plus.js.configure_changed_layout:
+  path: '/lb-plus/configure-section-layout-change/{section_storage_type}/{section_storage}/{section_delta}/{plugin_id}/{nested_storage_path}'
+  defaults:
+    _title: 'Change layout'
+    _controller: '\Drupal\lb_plus\Controller\ChangeLayout::changeAndConfigureNewLayout'
+    nested_storage_path: null
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE

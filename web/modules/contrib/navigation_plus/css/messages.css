@@ -1,0 +1,49 @@
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+.edit_mode [data-drupal-messages] {
+  position: fixed;
+  /* Above modals */
+  z-index: 1265;
+  bottom: var(--drupal-displace-offset-bottom, 0);
+  right: calc(var(--drupal-displace-offset-right, 1rem) + 1rem);
+  max-width: 600px;
+
+  .messages {
+    margin-bottom: .5rem;
+    border-radius: 8px;
+    box-shadow:
+      0 0 72px rgba(0, 0, 0, 0.2),
+      0 0 8px rgba(0, 0, 0, 0.04),
+      0 0 40px rgba(0, 0, 0, 0.06);
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    + .messages {
+      margin-bottom: .5rem;
+    }
+
+    &.is-exiting {
+      animation: slideOutRight 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+  }
+
+}

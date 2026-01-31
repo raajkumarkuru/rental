@@ -1,0 +1,28 @@
+construction_rental.settings:
+  title: 'Construction Rental'
+  description: 'Settings for the Construction Rental module.'
+  parent: system.admin_config_services
+  route_name: construction_rental.settings
+  weight: 100
+construction_rental.rented_out:
+  title: 'Rented Out Items'
+  description: 'View and manage rented out construction materials'
+  parent: commerce.orders
+  route_name: construction_rental.rented_out
+  weight: 10
+
+construction_rental.stock_management:
+  title: 'Stock Transactions'
+  description: 'Create and manage stock transactions using Commerce Stock'
+  parent: commerce_stock.configuration
+  route_name: commerce_stock_ui.stock_transactions1
+  weight: 15
+
+construction_rental.dashboard:
+  title: 'Construction Rental Dashboard'
+  description: 'Dashboard for products, variants, stock and orders.'
+  route_name: construction_rental.dashboard
+  menu_name: management
+  parent: system.admin_content
+  weight: 0
+

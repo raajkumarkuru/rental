@@ -1,0 +1,10 @@
+type: theme_engine
+name: Twig Events Twig Engine Wrapper
+description: A wrapper for the twig engine to dispatch events at key points.
+package: Core
+core_version_requirement: ^9 || ^10 || ^11
+
+# Information added by Drupal.org packaging script on 2025-02-21
+version: '1.0.1'
+project: 'twig_events'
+datestamp: 1740176152

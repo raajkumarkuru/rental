@@ -1,0 +1,7 @@
+[data-admin-toolbar="collapsed"] .toolbar-label {
+  display: none;
+}
+
+.navigation-plus-mode, #toggle-edit-mode, #edit-mode-top-bar {
+  --admin-toolbar-color-focus: var(--navigation-plus-secondary-color, --admin-toolbar-color-focus);
+}

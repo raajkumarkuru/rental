@@ -1,0 +1,6 @@
+navigation_plus.settings:
+  title: Navigation +
+  description: Configure Navigation + settings
+  parent: system.admin_config_content
+  route_name: navigation_plus.settings
+  weight: 10

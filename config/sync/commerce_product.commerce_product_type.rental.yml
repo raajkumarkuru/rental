@@ -1,0 +1,13 @@
+uuid: 14b161e7-df40-46ba-86b5-7d2963d98c6c
+langcode: en-gb
+status: true
+dependencies: {  }
+id: rental
+label: 'Rental Product'
+traits: {  }
+locked: false
+description: 'Product type for construction materials rental'
+variationTypes:
+  - rental_variation
+multipleVariations: true
+injectVariationFields: true

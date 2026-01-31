@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .cls-1 {
+        filter: url(#drop-shadow-1);
+        stroke-width: .75px;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke: #fff;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        filter: url(#drop-shadow-2);
+        stroke-width: 1.5px;
+      }
+
+      .cls-3 {
+        fill-rule: evenodd;
+      }
+    </style>
+    <filter id="drop-shadow-1" x=".056" y="-.151" width="16" height="23" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy=".5"/>
+      <feGaussianBlur result="blur" stdDeviation=".5"/>
+      <feFlood flood-color="#000" flood-opacity=".5"/>
+      <feComposite in2="blur" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="drop-shadow-2" x="11.056" y="11.849" width="18" height="20" filterUnits="userSpaceOnUse">
+      <feOffset dx="0" dy=".5"/>
+      <feGaussianBlur result="blur-2" stdDeviation=".5"/>
+      <feFlood flood-color="#000" flood-opacity=".5"/>
+      <feComposite in2="blur-2" operator="in"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="mous">
+    <g>
+      <path class="cls-3" d="M3.057,3.335v11.982l2.57-2.55,2.454,5.871,2.117-1.011-2.358-5.582h3.753L3.057,3.335Z"/>
+      <path class="cls-1" d="M3.435,2.965l-.907-.926v14.55l.902-.895,2.012-1.997,2.151,5.145.215.513.502-.24,2.117-1.011.456-.218-.197-.466-2.047-4.847h4.215l-.882-.9L3.435,2.965Z"/>
+    </g>
+  </g>
+  <g id="Layer_11" data-name="Layer 11">
+    <path class="cls-2" d="M25.8,16.869h-2.267v-.756c0-.974-.79-1.764-1.764-1.764h-3.023c-.974,0-1.764.79-1.764,1.764v.756h-2.267c-.417,0-.756.338-.756.756s.338.756.756.756h.252v8.566c0,.696.564,1.26,1.26,1.26h8.062c.696,0,1.26-.564,1.26-1.26v-8.566h.252c.417,0,.756-.338.756-.756s-.338-.756-.756-.756Z"/>
+    <path d="M25.8,16.869h-2.267v-.756c0-.974-.79-1.764-1.764-1.764h-3.023c-.974,0-1.764.79-1.764,1.764v.756h-2.267c-.417,0-.756.338-.756.756s.338.756.756.756h.252v8.566c0,.696.564,1.26,1.26,1.26h8.062c.696,0,1.26-.564,1.26-1.26v-8.566h.252c.417,0,.756-.338.756-.756s-.338-.756-.756-.756ZM18.495,16.113c0-.139.113-.252.252-.252h3.023c.139,0,.252.113.252.252v.756h-3.527v-.756ZM24.037,26.694h-7.558v-8.314h7.558v8.314ZM19.502,20.396v4.031c0,.417-.338.756-.756.756s-.756-.338-.756-.756v-4.031c0-.417.338-.756.756-.756s.756.338.756.756ZM22.525,20.396v4.031c0,.417-.338.756-.756.756s-.756-.338-.756-.756v-4.031c0-.417.338-.756.756-.756s.756.338.756.756Z"/>
+  </g>
+</svg>

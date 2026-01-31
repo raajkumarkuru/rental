@@ -1,0 +1,55 @@
+<?php
+
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\user\Entity\User;
+
+function _np_ensure_settings_not_null() {
+  $users = User::loadMultiple();
+  foreach ($users as $user) {
+    $user->navigation_plus_settings->setValue([]);
+    $user->save();
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function navigation_plus_install($is_syncing) {
+  _navigation_plus_add_settings_field();
+  _np_ensure_settings_not_null();
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function navigation_plus_update_10000(&$sandbox) {
+  _navigation_plus_add_settings_field();
+}
+
+/**
+ * Ensure navigation_plus_settings is not null.
+ */
+function navigation_plus_update_10400(&$sandbox) {
+  _np_ensure_settings_not_null();
+}
+
+function _navigation_plus_add_settings_field() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  if ($definition_update_manager->getFieldStorageDefinition('navigation_plus_settings', 'user')) {
+    return;
+  }
+
+  $field_storage_definition = BaseFieldDefinition::create('map')
+    ->setLabel(t('Navigation + Settings'))
+    ->setDescription(t('Settings for Navigation + Edit Mode.'));
+
+  $definition_update_manager->installFieldStorageDefinition('navigation_plus_settings', 'user', 'navigation_plus', $field_storage_definition);
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function navigation_plus_update_10001(&$sandbox) {
+  _navigation_plus_add_settings_field();
+}

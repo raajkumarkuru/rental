@@ -1,0 +1,41 @@
+services:
+  _defaults:
+    autoconfigure: true
+    autowire: true
+
+  lb_plus.no_help_block:
+    class: Drupal\lb_plus\Config\NoHelpBlock
+    tags:
+      - { name: config.factory.override, priority: 5 }
+
+  lb_plus.section_storage_handler:
+    class: Drupal\lb_plus\SectionStorageHandler
+    arguments: ['@block_content.uuid_lookup', '@entity_type.manager', '@plugin.manager.layout_builder.section_storage', '@layout_builder.tempstore_repository', '@module_handler']
+  Drupal\lb_plus\SectionStorageHandler: '@lb_plus.section_storage_handler'
+
+  lb_plus.new_media:
+    class: Drupal\lb_plus\NewMedia
+  Drupal\lb_plus\NewMedia: '@lb_plus.new_media'
+
+  lb_plus.dropzones:
+    class: Drupal\lb_plus\Dropzones
+  Drupal\lb_plus\Dropzones: '@lb_plus.dropzones'
+
+  lb_plus.navigation_replace_media:
+    class: Drupal\lb_plus\EventSubscriber\NavigationPlusReplaceMedia
+
+  lb_plus.block_component_render_array:
+    class: Drupal\lb_plus\EventSubscriber\BlockComponentRenderArray
+
+  lb_plus.navigation_new_media:
+    class: Drupal\lb_plus\EventSubscriber\NavigationPlusNewMedia
+
+  lb_plus.section_tool_indicators:
+    class: Drupal\lb_plus\EventSubscriber\SectionToolIndicators
+
+  lb_plus.ui_build:
+    class: Drupal\lb_plus\EventSubscriber\EditableUiBuilder
+
+  lb_plus.layout_block:
+    class: Drupal\lb_plus\EventSubscriber\LayoutBlock
+

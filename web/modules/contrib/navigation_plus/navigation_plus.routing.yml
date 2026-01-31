@@ -1,0 +1,92 @@
+navigation_plus.settings:
+  path: '/admin/config/content/navigation-plus'
+  defaults:
+    _title: 'Navigation + Settings'
+    _form: 'Drupal\navigation_plus\Form\SettingsForm'
+  requirements:
+    _permission: 'administer Navigation + configuration'
+
+navigation_plus.load_editable_page:
+  path: '/navigation-plus/load-editable-page/{entity_type}/{entity}/{view_mode}'
+  defaults:
+    _title: 'Load Editable Page'
+    _controller: '\Drupal\navigation_plus\Controller\LoadEditablePage'
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
+  requirements:
+    _permission: 'use toolbar plus edit mode'
+
+navigation_plus.mode.enable:
+  path: '/navigation-plus/mode/enable/{plugin_id}/{entity_type_id}/{entity_bundle_id}'
+  defaults:
+    _controller: '\Drupal\navigation_plus\Controller\ModeController::enable'
+  requirements:
+    _permission: 'configure toolbar plus modes'
+
+navigation_plus.mode.disable:
+  path: '/navigation-plus/mode/disable/{plugin_id}/{entity_type_id}/{entity_bundle_id}'
+  defaults:
+    _controller: '\Drupal\navigation_plus\Controller\ModeController::disable'
+  requirements:
+    _permission: 'configure toolbar plus modes'
+
+navigation_plus.mode.configure:
+  path: '/navigation-plus/mode/configure/{plugin_id}/{entity_type_id}/{entity_bundle_id}'
+  defaults:
+    _form: '\Drupal\navigation_plus\Form\ModeConfigureForm'
+  requirements:
+    _permission: 'configure toolbar plus modes'
+
+navigation_plus.settings.save_user_hotkey:
+  path: '/navigation-plus/save-user-hotkey/{tool_id}/{hotkey}'
+  defaults:
+    _title: 'Save User Hotkey'
+    _controller: '\Drupal\navigation_plus\Controller\Settings::saveHotkey'
+  requirements:
+    _permission: 'use toolbar plus edit mode'
+
+navigation_plus.settings.remove_media_file_association:
+  path: '/navigation-plus/remove-media-file-association/{file_extension}'
+  defaults:
+    _title: 'Remove media file association'
+    _controller: '\Drupal\navigation_plus\Controller\Settings::removeMediaFileAssociation'
+  requirements:
+    _permission: 'use toolbar plus edit mode'
+
+navigation_plus.replace_media:
+  path: '/navigation-plus/replace-media/{entity_type}/{entity}/{view_mode}/{media_reference}/{media_bundle}'
+  defaults:
+    _title: 'Dropzone Js'
+    _controller: '\Drupal\navigation_plus\Controller\MediaDropzoneJs::replaceMedia'
+  requirements:
+    _entity_access: entity.update
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
+
+navigation_plus.new_media:
+  path: '/navigation-plus/new-media/{entity_type}/{entity}/{view_mode}'
+  defaults:
+    _title: 'Dropzone Js'
+    _controller: '\Drupal\navigation_plus\Controller\MediaDropzoneJs::newMedia'
+  requirements:
+    _entity_access: entity.update
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
+
+navigation_plus.block_plugin.edit:
+  path: '/block-plugin/{block}/{view_mode}'
+  defaults:
+    _controller: '\Drupal\navigation_plus\Controller\BlockPluginEdit::render'
+    _title_callback: '\Drupal\navigation_plus\Controller\BlockPluginEdit::title'
+  requirements:
+    _entity_access: block.update
+  options:
+    parameters:
+      block:
+        type: entity:block

@@ -1,0 +1,69 @@
+editing_ui:
+  js:
+    js/behaviors/dnd-page-scroll.js: { attributes: { type: 'module' }}
+    js/behaviors/dialog-close-override.js: { attributes: { type: 'module' }}
+  css:
+    theme:
+      css/blank-page.css: {}
+  dependencies:
+    - core/drupal.message
+    - core/drupal.displace
+    - navigation_plus/modes
+    - navigation_plus/edit_mode
+
+# Edit mode tools
+
+place_block:
+  js:
+    js/tools/place-block/behaviors/place-block-tabs.js: {}
+    js/tools/place-block/behaviors/draggable-new-blocks.js: {}
+    js/tools/place-block/behaviors/draggable-new-sections.js: {}
+    js/tools/place-block/place-block-tool-plugin.js: { attributes: { type: 'module' }}
+  css:
+    theme:
+      js/tools/place-block/place-block.css: {}
+  dependencies:
+    - lb_plus/editing_ui
+
+move:
+  js:
+    js/tools/move/move-tool-plugin.js: { attributes: { type: 'module' }}
+    js/tools/move/behaviors/draggable-existing-blocks.js: { attributes: { type: 'module' }}
+  dependencies:
+    - lb_plus/editing_ui
+
+layout:
+  js:
+    js/tools/layout/behaviors/block-preview.js: {}
+    js/tools/layout/behaviors/layout-outlines.js: {}
+    js/tools/layout/callbacks/edit-layout-block.js: {}
+    js/tools/layout/state/change-tool-exit-layout.js: {}
+    js/tools/layout/callbacks/set-layout-builder-inactive.js: {}
+    js/tools/layout/layout-tool-plugin.js: { attributes: { type: 'module' }}
+    js/tools/layout/behaviors/exit-nested-layout.js: { attributes: { type: 'module' }}
+    js/tools/layout/callbacks/change-section-layout.js: { attributes: { type: 'module' }}
+  css:
+    theme:
+      js/tools/layout/layout-block.css: {}
+      js/tools/layout/behaviors/layout-outlines.css: {}
+  dependencies:
+    - lb_plus/editing_ui
+
+trash:
+  js:
+    js/tools/trash/trash-tool-plugin.js: { attributes: { type: 'module' }}
+  dependencies:
+    - lb_plus/editing_ui
+
+configure:
+  js:
+    js/tools/configure/configure-tool-plugin.js: { attributes: { type: 'module' }}
+    js/tools/configure/callbacks/configure-section.js: { attributes: { type: 'module' }}
+  dependencies:
+    - lb_plus/editing_ui
+
+duplicate:
+  js:
+    js/tools/duplicate/duplicate-tool-plugin.js: { attributes: { type: 'module' }}
+  dependencies:
+    - lb_plus/editing_ui

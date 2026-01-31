@@ -1,0 +1,70 @@
+:root {
+  /* The right side bar z-index needs to be ABOVE the main content in order for the editable elements to remain clickable
+ while being edited. Unlike ckeditor related z-indexes, this does not need to be above the modal floor of 1260. */
+  --navigation-plus-right-sidebar-z-index: 5;
+  /* Above the grey part of a focused Layout Block. */
+  --navigation-plus-left-sidebar-z-index: 100;
+}
+
+#navigation-plus-right-sidebar {
+  position: fixed;
+  right: 0;
+  top: var(--admin-toolbar-top-bar-height);
+  height: calc(100vh - var(--admin-toolbar-top-bar-height));
+  z-index: var(--navigation-plus-right-sidebar-z-index);
+}
+
+.navigation-plus-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--drupal-displace-offset-top));
+  background-color: #fff;
+  font-family: inter, sans-serif;
+  inline-size: 17rem;
+  border-inline-start: 1px solid #d8dfea;
+  user-select: none;
+  &.right-sidebar,
+  &.left-sidebar {
+    min-height: 100%;
+  }
+  &.right-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1em;
+    z-index: var(--navigation-plus-right-sidebar-z-index);
+    border-left: 1px solid var(--drupal-admin-color-gray-600, #b4bdd1);
+    > :last-child {
+      margin-bottom: 4rem;
+    }
+  }
+  &.left-sidebar {
+    position: fixed;
+    top: var(--admin-toolbar-top-bar-height);
+    /* It would be nice to use variables like left: --admin-toolbar-sidebar-width, but
+    the all: reset that comes along with those variables reeks havoc on CKEditors.
+    So, we need to reimplement what --admin-toolbar-sidebar-width does... */
+    left: calc(4.5 * max(1rem, 16PX));
+    z-index: var(--navigation-plus-left-sidebar-z-index);
+    border-inline-end: 1px solid var(--drupal-admin-color-gray-100, #b4bdd1);
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+  .form-item .error {
+    outline: 2px solid #E30000FF;
+  }
+}
+
+[data-admin-toolbar="expanded"] .left-sidebar {
+  left: calc(16.5 * max(1rem, 16PX));
+}
+
+@media (min-width: 64rem) {
+  /* Move the off canvas over via displace.js */
+  .dialog-off-canvas-main-canvas {
+    margin-inline-end: var(--drupal-displace-offset-right);
+  }
+  #admin-toolbar {
+    block-size: 100vh;
+  }
+}

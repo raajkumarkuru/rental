@@ -1,0 +1,54 @@
+.np-scrollbar-track {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  width: 11px;
+  height: 100%;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+  display: none;
+}
+
+.np-scrollbar-track.visible {
+  opacity: 1;
+}
+
+.np-scrollbar-track.dragging {
+  opacity: 1 !important;
+}
+
+.np-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 7px;
+  transition: background-color 0.2s ease, width 0.2s ease;
+  cursor: pointer;
+}
+
+/* Hover states */
+.np-scrollbar-track:hover .np-scrollbar-thumb,
+.np-scrollbar-track.dragging .np-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.5);
+  width: 9px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .np-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .np-scrollbar-track:hover .np-scrollbar-thumb,
+  .np-scrollbar-track.dragging .np-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.5);
+  }
+}
+
+#navigation-plus-right-sidebar .right-sidebar {
+  transition: top 0.1s ease-out;
+  min-height: 100%;
+}

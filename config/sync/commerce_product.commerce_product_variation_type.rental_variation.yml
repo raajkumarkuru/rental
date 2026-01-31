@@ -1,0 +1,10 @@
+uuid: 9d8f9dc0-82b6-4e93-a451-e860ef6fe41c
+langcode: en-gb
+status: true
+dependencies: {  }
+id: rental_variation
+label: 'Rental Variation'
+traits: {  }
+locked: false
+orderItemType: default
+generateTitle: true

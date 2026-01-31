@@ -1,0 +1,49 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - views
+    - commerce_order
+id: construction_rental_orders_forced
+label: 'Construction Rental Orders (forced)'
+module: views
+core: 10.x
+base_table: commerce_order
+display:
+  default:
+    display_plugin: default
+    id: default
+    display_title: 'Defaults'
+    position: 0
+  block_1:
+    display_plugin: block
+    id: block_1
+    display_title: 'Orders block (forced)'
+    position: 1
+    display_options:
+      title: ''
+      access:
+        type: none
+      cache:
+        type: none
+      fields:
+        order_number:
+          id: order_number
+          table: commerce_order
+          field: order_number
+          label: 'Order #'
+        total_price:
+          id: total_price
+          table: commerce_order
+          field: total_price
+          label: 'Total'
+      sort_by:
+        created:
+          id: created
+          table: commerce_order
+          field: created
+          order: DESC
+      items_per_page: 20
+      style:
+        type: unformatted
+        options: { }

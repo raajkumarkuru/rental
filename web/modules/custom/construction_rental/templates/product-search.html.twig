@@ -1,0 +1,22 @@
+<div class="construction-rental-product-search">
+  <h2>{{ title }}</h2>
+  <div class="search-form">
+    {{ search_form }}
+  </div>
+
+  <div class="search-results">
+    {% if results %}
+      <ul class="products">
+        {% for item in results %}
+          <li class="product-item">
+            <div class="product-header">{{ item.title|raw }}</div>
+            <div class="product-meta">{{ item.variation }} - {{ item.price }}</div>
+            <div class="product-add-to-cart">{{ item.add_to_cart }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>{{ 'No products found.'|t }}</p>
+    {% endif %}
+  </div>
+</div>

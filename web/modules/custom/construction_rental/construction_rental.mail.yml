@@ -1,0 +1,20 @@
+rental_expiration:
+  label: 'Rental Expiration Notification'
+  description: 'Sent when a rental is about to expire or is overdue'
+  subject: 'Rental Expiration Notice - [construction_rental:product]'
+  body:
+    - 'Dear [construction_rental:customer-name],'
+    - ''
+    - 'This is a reminder that your rental of [construction_rental:product] is [construction_rental:status-text].'
+    - ''
+    - 'Rental Details:'
+    - 'Order Number: [construction_rental:order-number]'
+    - 'Product: [construction_rental:product]'
+    - 'End Date: [construction_rental:end-date]'
+    - '[construction_rental:days-text]'
+    - ''
+    - 'Please return the items by the end date or contact us to extend your rental period.'
+    - ''
+    - 'Thank you,'
+    - '[site:name]'
+

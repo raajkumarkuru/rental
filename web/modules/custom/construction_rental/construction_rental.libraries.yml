@@ -1,0 +1,19 @@
+dashboard:
+  css:
+    theme:
+      css/dashboard.css: {}
+rented_out:
+  css:
+    theme:
+      css/rented-out.css: {}
+  js:
+    js/rented-out.js: {}
+
+product_selection:
+  css:
+    theme:
+      css/product-selection.css: {}
+  js:
+    js/product-selection.js: {}
+
+

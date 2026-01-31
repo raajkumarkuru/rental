@@ -1,0 +1,5 @@
+services:
+  lb_plus_lb_block_decorator.route_subscriber:
+    class: Drupal\lb_plus_lb_block_decorator\EventSubscriber\LbBlockDecoratorRouteSubscriber
+    tags:
+      - { name: event_subscriber }

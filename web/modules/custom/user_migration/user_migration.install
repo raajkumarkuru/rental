@@ -1,0 +1,144 @@
+<?php
+
+/**
+ * @file
+ * Install file for user_migration module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function user_migration_schema() {
+  $schema['migration_user_role_permission'] = [
+    'description' => 'Stores one row per user per role per permission.',
+    'fields' => [
+      'user_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'role' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'permission' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['user_id', 'role', 'permission'],
+  ];
+  
+  // Table: migration_roles
+  $schema['migration_roles'] = [
+    'description' => 'Stores all roles for migration.',
+    'fields' => [
+      'role_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'role_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'role_description' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['role_id'],
+  ];
+
+  // Table: migration_user_roles
+  $schema['migration_user_roles'] = [
+    'description' => 'Stores mapping of users to roles.',
+    'fields' => [
+      'user_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'role_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['user_id', 'role_id'],
+  ];
+
+  // Table: migration_users
+  $schema['migration_users'] = [
+    'description' => 'Stores migrated users.',
+    'fields' => [
+      'user_id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'user_name' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ],
+      'pass' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'email' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ],
+      'default_repo_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+      'is_jammex_admin' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'is_active' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ],
+      'first_name' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'last_name' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'cac_subject' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'last_login_date' => [
+        'type' => 'int',
+        'not null' => FALSE,
+      ],
+      'created_date' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'last_updated_date' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['user_id'],
+  ];
+  
+  return $schema;
+}

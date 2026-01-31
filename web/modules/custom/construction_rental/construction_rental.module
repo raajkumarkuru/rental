@@ -1,0 +1,930 @@
+<?php
+
+/**
+ * @file
+ * Construction Rental module for managing construction materials rental.
+ */
+
+use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_product\Entity\ProductVariationInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\commerce_price\Price;
+
+/**
+ * Implements hook_help().
+ */
+function construction_rental_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.construction_rental':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Construction Rental module provides rental functionality for construction materials using Drupal Commerce.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function construction_rental_theme($existing, $type, $theme, $path) {
+  return [
+    'construction_rental_dashboard' => [
+      'variables' => [
+        'products' => NULL,
+        'orders' => NULL,
+        'title' => NULL,
+      ],
+  'template' => 'dashboard',
+  'path' => \Drupal::service('extension.list.module')->getPath('construction_rental') . '/templates',
+    ],
+    'product_search' => [
+      'variables' => [
+        'title' => NULL,
+        'search_form' => NULL,
+        'results' => NULL,
+      ],
+      'template' => 'product-search',
+      'path' => \Drupal::service('extension.list.module')->getPath('construction_rental') . '/templates',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_field_widget_form_alter().
+ *
+ * Remove USD from available currency dropdowns to prevent users from
+ * selecting USD. We keep currency entities intact (USD may still exist for
+ * historical data) but hide it in price widgets.
+ */
+function construction_rental_field_widget_form_alter(array &$element, FormStateInterface $form_state, $context) {
+  // The price widgets expose '#available_currencies' and a 'currency_code'
+  // child element. Remove USD from both if present.
+  if (isset($element['#available_currencies']) && is_array($element['#available_currencies'])) {
+    $element['#available_currencies'] = array_values(array_filter($element['#available_currencies'], function($c) { return $c !== 'USD'; }));
+  }
+
+  if (isset($element['currency_code'])) {
+    if (isset($element['currency_code']['#options']) && is_array($element['currency_code']['#options'])) {
+      if (isset($element['currency_code']['#options']['USD'])) {
+        unset($element['currency_code']['#options']['USD']);
+      }
+    }
+    // Also remove default value if it points to USD.
+    if (isset($element['currency_code']['#default_value']) && $element['currency_code']['#default_value'] === 'USD') {
+      // Prefer INR as default if available.
+      $element['currency_code']['#default_value'] = 'INR';
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ */
+function construction_rental_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+  $fields = [];
+
+  // Add rental-specific fields to Product Variation.
+  if ($entity_type->id() === 'commerce_product_variation') {
+    // Rental period fields.
+    $fields['field_rental_period_days'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Default Rental Period (Days)'))
+      ->setDescription(t('Default number of days for rental period.'))
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => 20,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'number_integer',
+        'weight' => 20,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDefaultValue(7);
+  }
+
+  // Add rental-specific fields to Order Item.
+  if ($entity_type->id() === 'commerce_order_item') {
+    $fields['field_rental_start_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Rental Start Date'))
+      ->setDescription(t('Date when rental period starts.'))
+      ->setSettings([
+        'datetime_type' => 'datetime',
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_default',
+        'weight' => 20,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'datetime_default',
+        'weight' => 20,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+
+    $fields['field_rental_end_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Rental End Date'))
+      ->setDescription(t('Expected return date for the rental.'))
+      ->setSettings([
+        'datetime_type' => 'datetime',
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_default',
+        'weight' => 21,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'datetime_default',
+        'weight' => 21,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+
+    $fields['field_rented_quantity'] = BaseFieldDefinition::create('decimal')
+      ->setLabel(t('Rented Quantity'))
+      ->setDescription(t('Quantity being rented.'))
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => 22,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'number_decimal',
+        'weight' => 22,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+
+    $fields['field_returned_quantity'] = BaseFieldDefinition::create('decimal')
+      ->setLabel(t('Returned Quantity'))
+      ->setDescription(t('Quantity that has been returned.'))
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => 23,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'number_decimal',
+        'weight' => 23,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDefaultValue(0);
+
+    $fields['field_rental_status'] = BaseFieldDefinition::create('list_string')
+      ->setLabel(t('Rental Status'))
+      ->setDescription(t('Current status of the rental.'))
+      ->setSettings([
+        'allowed_values' => [
+          'pending' => t('Pending'),
+          'active' => t('Active'),
+          'partial_return' => t('Partially Returned'),
+          'completed' => t('Completed'),
+          'overdue' => t('Overdue'),
+        ],
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 24,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'list_default',
+        'weight' => 24,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDefaultValue('pending');
+
+    // Notification tracking field.
+    $fields['field_last_expiration_notification'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Last Expiration Notification Date'))
+      ->setDescription(t('Date when last expiration notification was sent.'))
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', FALSE);
+  }
+
+  // Add rental-specific fields to Order.
+  if ($entity_type->id() === 'commerce_order') {
+    // Order-level rental period fields: start and end.
+    $fields['field_order_rental_start_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Order Rental Start Date'))
+      ->setDescription(t('Earliest rental start date among order items.'))
+      ->setSettings([
+        'datetime_type' => 'datetime',
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'datetime_default',
+        'weight' => 40,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['field_order_rental_end_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Order Rental End Date'))
+      ->setDescription(t('Latest expected return date among order items.'))
+      ->setSettings([
+        'datetime_type' => 'datetime',
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'datetime_default',
+        'weight' => 41,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['field_advance_payment'] = BaseFieldDefinition::create('commerce_price')
+      ->setLabel(t('Advance Payment'))
+      ->setDescription(t('Advance payment amount received.'))
+      ->setDisplayOptions('form', [
+        'type' => 'commerce_price_default',
+        'weight' => 30,
+      ])
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'commerce_price_default',
+        'weight' => 30,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['field_remaining_balance'] = BaseFieldDefinition::create('commerce_price')
+      ->setLabel(t('Remaining Balance'))
+      ->setDescription(t('Remaining balance to be paid.'))
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'commerce_price_default',
+        'weight' => 31,
+      ])
+      ->setDisplayConfigurable('view', TRUE)
+      ->setComputed(TRUE)
+      ->setClass('\Drupal\construction_rental\Field\RemainingBalanceFieldItemList');
+  }
+
+  return $fields;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function construction_rental_commerce_order_item_presave(OrderItemInterface $order_item) {
+  // Sync rented_quantity with order item quantity if not set.
+  if ($order_item->hasField('field_rented_quantity') && $order_item->get('field_rented_quantity')->isEmpty()) {
+    $order_item->set('field_rented_quantity', $order_item->getQuantity());
+  }
+
+  // Set rental start date if not set.
+  if ($order_item->hasField('field_rental_start_date') && $order_item->get('field_rental_start_date')->isEmpty()) {
+    $order_item->set('field_rental_start_date', date('Y-m-d\TH:i:s'));
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ * 
+ * Note: Commerce Stock handles stock updates automatically through
+ * order event subscribers. These hooks are kept for potential
+ * rental-specific logic in the future.
+ */
+function construction_rental_commerce_order_item_insert(OrderItemInterface $order_item) {
+  // Commerce Stock handles stock updates automatically.
+  // No custom stock update needed.
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ * 
+ * Note: Commerce Stock handles stock updates automatically through
+ * order event subscribers. These hooks are kept for potential
+ * rental-specific logic in the future.
+ */
+function construction_rental_commerce_order_item_update(OrderItemInterface $order_item) {
+  // Commerce Stock handles stock updates automatically.
+  // No custom stock update needed.
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ * 
+ * Note: Commerce Stock handles stock updates automatically through
+ * order event subscribers. These hooks are kept for potential
+ * rental-specific logic in the future.
+ */
+function construction_rental_commerce_order_item_delete(OrderItemInterface $order_item) {
+  // Commerce Stock handles stock updates automatically.
+  // No custom stock update needed.
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for orders.
+ */
+function construction_rental_commerce_order_presave(OrderInterface $order) {
+  // Calculate remaining balance.
+  // If the order is new and advance payment field exists but empty,
+  // set an automatic advance based on the configured percentage.
+  if ($order->isNew() && $order->hasField('field_advance_payment')) {
+    $current_advance = $order->get('field_advance_payment')->first();
+    if (!$current_advance || $current_advance->isEmpty()) {
+      $total_price = $order->getTotalPrice();
+      if ($total_price) {
+        $config = \Drupal::config('construction_rental.settings');
+        $percentage = (int) $config->get('advance_percentage');
+        if ($percentage <= 0) {
+          $percentage = 10;
+        }
+
+        $total_amount = (float) $total_price->getNumber();
+        // Calculate the configured percentage and format with 2 decimals.
+        $advance_amount = number_format($total_amount * ($percentage / 100.0), 2, '.', '');
+        $currency_code = $total_price->getCurrencyCode();
+        if (empty($currency_code)) {
+          $currency_code = _construction_rental_resolve_fallback_currency();
+        }
+        // Set the commerce_price field value.
+        $order->set('field_advance_payment', [
+          'number' => $advance_amount,
+          'currency_code' => $currency_code,
+        ]);
+      }
+    }
+  }
+
+  // Calculate remaining balance (existing behavior expects advance + computed field handling).
+  if ($order->hasField('field_advance_payment') && $order->hasField('field_remaining_balance')) {
+    $total_price = $order->getTotalPrice();
+    $advance_payment = $order->get('field_advance_payment')->first();
+    
+    if ($advance_payment && !$advance_payment->isEmpty()) {
+      // Try to read the numeric value from the field item.
+      $advance_amount = 0;
+      try {
+        $advance_amount = (float) $advance_payment->get('number')->getValue();
+      }
+      catch (\Exception $e) {
+        // Fallback: attempt property access.
+        if (isset($advance_payment->number)) {
+          $advance_amount = (float) $advance_payment->number;
+        }
+      }
+
+      $total_amount = $total_price ? $total_price->getNumber() : 0;
+      $remaining = $total_amount - $advance_amount;
+
+      // Store remaining balance (we'll compute it properly in a computed field).
+      if ($remaining > 0) {
+        // Determine currency code from total price or store default.
+        $currency_code = $total_price ? $total_price->getCurrencyCode() : NULL;
+        if (empty($currency_code)) {
+          try {
+            $stores = \Drupal::entityTypeManager()->getStorage('commerce_store')->loadMultiple();
+            if (!empty($stores)) {
+              $store = reset($stores);
+              $currency_code = method_exists($store, 'getDefaultCurrencyCode') ? $store->getDefaultCurrencyCode() : NULL;
+            }
+          }
+          catch (\Exception $e) {
+            $currency_code = NULL;
+          }
+        }
+
+        // Ensure the currency code actually exists on the site. If not,
+        // resolve a valid fallback to avoid entity save errors when the
+        // currency config is missing (e.g., USD removed).
+        if (!empty($currency_code)) {
+          $currency_storage = \Drupal::entityTypeManager()->getStorage('commerce_currency');
+          if (!$currency_storage->load($currency_code)) {
+            $currency_code = _construction_rental_resolve_fallback_currency();
+          }
+        }
+
+        if (empty($currency_code)) {
+          $currency_code = _construction_rental_resolve_fallback_currency();
+        }
+
+        // Note: This is a simplified approach. For proper computed fields,
+        // we'd need a custom field type or use hook_ENTITY_TYPE_load().
+      }
+    }
+  }
+}
+
+/**
+ * Resolve a valid currency code present on the site.
+ *
+ * Returns the store default currency if available, otherwise the first
+ * enabled commerce currency, or 'INR' as a last resort.
+ */
+function _construction_rental_resolve_fallback_currency() {
+  try {
+    // Try store default currency first.
+    $stores = \Drupal::entityTypeManager()->getStorage('commerce_store')->loadMultiple();
+    if (!empty($stores)) {
+      $store = reset($stores);
+      if (method_exists($store, 'getDefaultCurrencyCode')) {
+        $code = $store->getDefaultCurrencyCode();
+        if (!empty($code)) {
+          $currency_storage = \Drupal::entityTypeManager()->getStorage('commerce_currency');
+          if ($currency_storage->load($code)) {
+            return $code;
+          }
+        }
+      }
+    }
+
+    // Fall back to any existing commerce_currency entity.
+    $currency_storage = \Drupal::entityTypeManager()->getStorage('commerce_currency');
+    $currencies = $currency_storage->loadMultiple();
+    if (!empty($currencies)) {
+      $first = reset($currencies);
+      if ($first && isset($first->currency_code)) {
+        return $first->currency_code;
+      }
+      // Try common property names.
+      if ($first && method_exists($first, 'id')) {
+        return $first->id();
+      }
+    }
+  }
+  catch (\Exception $e) {
+    // ignore and fall through to default
+  }
+
+  // Last resort.
+  return 'INR';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for orders.
+ */
+function construction_rental_commerce_order_update(OrderInterface $order) {
+  // Update rental status based on order state.
+  $state = $order->getState()->getId();
+  
+  if ($state === 'completed' || $state === 'fulfillment') {
+    foreach ($order->getItems() as $order_item) {
+      if ($order_item->hasField('field_rental_status')) {
+        $returned_qty = $order_item->get('field_returned_quantity')->value ?? 0;
+        $rented_qty = $order_item->get('field_rented_quantity')->value ?? 0;
+        
+        if ($returned_qty >= $rented_qty) {
+          $order_item->set('field_rental_status', 'completed');
+        }
+        elseif ($returned_qty > 0) {
+          $order_item->set('field_rental_status', 'partial_return');
+        }
+        else {
+          $order_item->set('field_rental_status', 'active');
+        }
+        
+        $order_item->save();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for commerce_order.
+ *
+ * Create a Commerce Payment for the advance amount (if present) when an
+ * order is first created. This records the advance as a completed payment
+ * so that order paid/balance fields reflect it.
+ */
+function construction_rental_commerce_order_insert(OrderInterface $order) {
+  // Only act for orders that have an advance payment set and a total.
+  if (!$order->hasField('field_advance_payment') || !$order->hasField('field_remaining_balance')) {
+    return;
+  }
+
+  $advance_field = $order->get('field_advance_payment')->first();
+  if (!$advance_field || $advance_field->isEmpty()) {
+    return;
+  }
+
+  // Determine advance amount and currency.
+  try {
+    $advance_number = (string) $advance_field->get('number')->getValue();
+  }
+  catch (\Exception $e) {
+    $advance_number = isset($advance_field->number) ? (string) $advance_field->number : '0';
+  }
+  $currency_code = $advance_field->get('currency_code')->getValue() ?: ($order->getTotalPrice() ? $order->getTotalPrice()->getCurrencyCode() : _construction_rental_resolve_fallback_currency());
+
+  if (empty($advance_number) || (float) $advance_number <= 0) {
+    return;
+  }
+
+  // Determine preferred gateway from config, else pick a reasonable gateway.
+  $payment_gateway_storage = \Drupal::entityTypeManager()->getStorage('commerce_payment_gateway');
+  $gateways = $payment_gateway_storage->loadMultiple();
+  $config = \Drupal::config('construction_rental.settings');
+  $preferred = $config->get('preferred_payment_gateway');
+  $gateway_id = NULL;
+
+  if (!empty($preferred) && isset($gateways[$preferred])) {
+    $gateway_id = $preferred;
+  }
+  else {
+    foreach ($gateways as $g) {
+      $id = is_object($g) ? $g->id() : $g['id'] ?? NULL;
+      if (!$id) {
+        continue;
+      }
+      // Prefer common offline gateways if present.
+      if (in_array($id, ['manual', 'example', 'offline', 'default'])) {
+        $gateway_id = $id;
+        break;
+      }
+      if ($gateway_id === NULL) {
+        $gateway_id = $id;
+      }
+    }
+  }
+
+  if (empty($gateway_id)) {
+    // No gateway available; log and skip creating payment.
+    \Drupal::logger('construction_rental')->warning('No payment gateway available to create advance payment for order @order.', ['@order' => $order->id()]);
+    return;
+  }
+
+  // Create the payment entity.
+  try {
+    $price_class = '\\Drupal\\commerce_price\\Price';
+    $amount = new $price_class($advance_number, $currency_code);
+
+    // Avoid creating duplicate payment for same order & amount.
+    $existing = \Drupal::entityTypeManager()->getStorage('commerce_payment')->loadByProperties([
+      'order_id' => $order->id(),
+      'amount' => (string) $amount,
+      'state' => 'completed',
+    ]);
+    if (empty($existing)) {
+      $payment = \Drupal::entityTypeManager()
+        ->getStorage('commerce_payment')
+        ->create([
+          'type' => 'payment_default',
+          'payment_gateway' => $gateway_id,
+          'order_id' => $order->id(),
+          'amount' => $amount,
+          'state' => 'completed',
+        ]);
+      $payment->save();
+    }
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('construction_rental')->error('Failed to create advance payment for order @order: @message', [
+      '@order' => $order->id(),
+      '@message' => $e->getMessage(),
+    ]);
+  }
+}
+
+/**
+ * Updates stock based on order item changes using Commerce Stock.
+ * 
+ * Note: Commerce Stock handles stock updates automatically through its
+ * event subscribers. This function is kept for any custom rental-specific
+ * stock adjustments if needed in the future.
+ */
+function _construction_rental_update_stock(OrderItemInterface $order_item, $op) {
+  // Commerce Stock handles stock updates automatically through order events.
+  // No custom stock update logic needed.
+  // This function is kept for potential future rental-specific adjustments.
+}
+
+/**
+ * Gets total rented quantity for a product variation.
+ * 
+ * This calculates rented quantity from order items, not stock levels.
+ * Stock levels are managed by Commerce Stock.
+ */
+function _construction_rental_get_total_rented(ProductVariationInterface $variation) {
+  $query = \Drupal::entityQuery('commerce_order_item')
+    ->accessCheck(FALSE)
+    ->condition('purchased_entity', $variation->id())
+    ->condition('order_id.entity.state', ['completed', 'fulfillment'], 'IN');
+  
+  $order_item_ids = $query->execute();
+  if (empty($order_item_ids)) {
+    return 0;
+  }
+
+  $order_items = \Drupal::entityTypeManager()
+    ->getStorage('commerce_order_item')
+    ->loadMultiple($order_item_ids);
+
+  $total_rented = 0;
+  foreach ($order_items as $order_item) {
+    if ($order_item->hasField('field_rented_quantity') && $order_item->hasField('field_returned_quantity')) {
+      $rented = $order_item->get('field_rented_quantity')->value ?? 0;
+      $returned = $order_item->get('field_returned_quantity')->value ?? 0;
+      $total_rented += ($rented - $returned);
+    }
+  }
+
+  return $total_rented;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function construction_rental_form_commerce_order_item_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $order_item = $form_state->getFormObject()->getEntity();
+  
+  // Add validation for stock availability.
+  $form['#validate'][] = 'construction_rental_order_item_validate';
+}
+
+/**
+ * Validates order item stock availability.
+ */
+function construction_rental_order_item_validate($form, FormStateInterface $form_state) {
+  $order_item = $form_state->getFormObject()->getEntity();
+  $purchased_entity = $order_item->getPurchasedEntity();
+  
+  if (!$purchased_entity instanceof ProductVariationInterface) {
+    return;
+  }
+
+  $rented_qty = $form_state->getValue(['field_rented_quantity', 0, 'value']) ?? $order_item->getQuantity();
+  
+  // Use Commerce Stock to check availability.
+  if (!\Drupal::moduleHandler()->moduleExists('commerce_stock')) {
+    $form_state->setError($form['field_rented_quantity'], t('Commerce Stock module is required for stock validation.'));
+    return;
+  }
+  
+  try {
+    $stock_service_manager = \Drupal::service('commerce_stock.service_manager');
+    $available_stock = $stock_service_manager->getStockLevel($purchased_entity) ?? 0;
+    
+    // Subtract currently rented quantity (excluding this order item if updating).
+    $stock_manager = \Drupal::service('construction_rental.stock_manager');
+    $current_rented = $stock_manager->getTotalRented($purchased_entity);
+    
+    // If updating, subtract the old rented quantity from this order item.
+    if (!$order_item->isNew()) {
+      $original = \Drupal::entityTypeManager()
+        ->getStorage('commerce_order_item')
+        ->loadUnchanged($order_item->id());
+      
+      if ($original && $original->hasField('field_rented_quantity')) {
+        $old_rented = $original->get('field_rented_quantity')->value ?? 0;
+        $old_returned = $original->get('field_returned_quantity')->value ?? 0;
+        $current_rented -= ($old_rented - $old_returned);
+      }
+    }
+    
+    $available_for_rental = max(0, $available_stock - $current_rented);
+    
+    if ($rented_qty > $available_for_rental) {
+      $form_state->setError($form['field_rented_quantity'], t('Insufficient stock. Available: @available, Requested: @requested', [
+        '@available' => $available_for_rental,
+        '@requested' => $rented_qty,
+      ]));
+    }
+  }
+  catch (\Exception $e) {
+    // If Commerce Stock fails, log error but don't block the form.
+    \Drupal::logger('construction_rental')->error('Stock validation failed: @message', ['@message' => $e->getMessage()]);
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function construction_rental_cron() {
+  // Check for overdue rentals and queue notifications.
+  $queue = \Drupal::queue('construction_rental_expiration_notifier');
+  
+  // Find rentals expiring in next 3 days or overdue.
+  $now = new \DateTime();
+  $three_days = clone $now;
+  $three_days->modify('+3 days');
+  
+  $query = \Drupal::entityQuery('commerce_order_item')
+    ->accessCheck(FALSE)
+    ->condition('field_rental_status', ['active', 'partial_return'], 'IN')
+    ->condition('field_rental_end_date', $three_days->format('Y-m-d\TH:i:s'), '<=');
+  
+  $order_item_ids = $query->execute();
+  
+  if (!empty($order_item_ids)) {
+    $order_items = \Drupal::entityTypeManager()
+      ->getStorage('commerce_order_item')
+      ->loadMultiple($order_item_ids);
+    
+    foreach ($order_items as $order_item) {
+      $end_date = $order_item->get('field_rental_end_date')->value ?? NULL;
+      if (!$end_date) {
+        continue;
+      }
+      
+      $end_datetime = new \DateTime($end_date);
+      
+      // Mark as overdue if past end date.
+      if ($end_datetime < $now) {
+        $order_item->set('field_rental_status', 'overdue');
+        $order_item->save();
+      }
+      
+      // Queue notification if not already sent today.
+      $last_notification = $order_item->get('field_last_expiration_notification')->value ?? NULL;
+      $today = $now->format('Y-m-d');
+      
+      if (!$last_notification || $last_notification < $today) {
+        $queue->createItem([
+          'order_item_id' => $order_item->id(),
+        ]);
+        
+        // Mark notification as sent.
+        $order_item->set('field_last_expiration_notification', $today);
+        $order_item->save();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function construction_rental_mail($key, &$message, $params) {
+  $token_service = \Drupal::token();
+  
+  switch ($key) {
+    case 'rental_expiration':
+      $order_item = $params['order_item'];
+      $order = $params['order'];
+      $customer = $params['customer'];
+      $product = $params['product'];
+      $end_date = $params['end_date'];
+      $days_remaining = $params['days_remaining'];
+      $is_overdue = $params['is_overdue'];
+      
+      $variables = [
+        'order_item' => $order_item,
+        'order' => $order,
+        'customer' => $customer,
+        'product' => $product,
+        'end_date' => $end_date,
+        'days_remaining' => $days_remaining,
+        'is_overdue' => $is_overdue,
+      ];
+      
+      $token_options = [
+        'langcode' => $message['langcode'],
+        'clear' => TRUE,
+      ];
+      
+      // Replace tokens in subject and body.
+      $message['subject'] = $token_service->replace($message['subject'], $variables, $token_options);
+      if (is_array($message['body'])) {
+        foreach ($message['body'] as $key => $body_line) {
+          $message['body'][$key] = $token_service->replace($body_line, $variables, $token_options);
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function construction_rental_tokens($type, $tokens, array $data, array $options, \Drupal\Core\Render\BubbleableMetadata $bubbleable_metadata) {
+  $replacements = [];
+  
+  if ($type === 'construction_rental') {
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'product':
+          if (isset($data['product'])) {
+            $replacements[$original] = $data['product'];
+          }
+          break;
+          
+        case 'customer-name':
+          if (isset($data['customer'])) {
+            $replacements[$original] = $data['customer']->getDisplayName();
+          }
+          break;
+          
+        case 'order-number':
+          if (isset($data['order'])) {
+            $replacements[$original] = $data['order']->getOrderNumber();
+          }
+          break;
+          
+        case 'end-date':
+          if (isset($data['end_date'])) {
+            $date = new \DateTime($data['end_date']);
+            $replacements[$original] = \Drupal::service('date.formatter')->format($date->getTimestamp(), 'medium');
+          }
+          break;
+          
+        case 'status-text':
+          if (isset($data['is_overdue']) && $data['is_overdue']) {
+            $replacements[$original] = t('overdue');
+          }
+          elseif (isset($data['days_remaining'])) {
+            if ($data['days_remaining'] <= 0) {
+              $replacements[$original] = t('expiring today');
+            }
+            elseif ($data['days_remaining'] == 1) {
+              $replacements[$original] = t('expiring tomorrow');
+            }
+            else {
+              $replacements[$original] = t('expiring in @days days', ['@days' => $data['days_remaining']]);
+            }
+          }
+          break;
+          
+        case 'days-text':
+          if (isset($data['is_overdue']) && $data['is_overdue']) {
+            $replacements[$original] = t('This rental is overdue. Please return the items immediately.');
+          }
+          elseif (isset($data['days_remaining'])) {
+            if ($data['days_remaining'] <= 0) {
+              $replacements[$original] = t('This rental expires today.');
+            }
+            elseif ($data['days_remaining'] == 1) {
+              $replacements[$original] = t('This rental expires tomorrow.');
+            }
+            else {
+              $replacements[$original] = t('This rental expires in @days days.', ['@days' => $data['days_remaining']]);
+            }
+          }
+          break;
+      }
+    }
+  }
+  
+  return $replacements;
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function construction_rental_token_info() {
+  $types['construction_rental'] = [
+    'name' => t('Construction Rental'),
+    'description' => t('Tokens related to construction rental.'),
+  ];
+  
+  $tokens['construction_rental']['product'] = [
+    'name' => t('Product'),
+    'description' => t('The product name being rented.'),
+  ];
+  
+  $tokens['construction_rental']['customer-name'] = [
+    'name' => t('Customer Name'),
+    'description' => t('The name of the customer.'),
+  ];
+  
+  $tokens['construction_rental']['order-number'] = [
+    'name' => t('Order Number'),
+    'description' => t('The order number.'),
+  ];
+  
+  $tokens['construction_rental']['end-date'] = [
+    'name' => t('End Date'),
+    'description' => t('The rental end date.'),
+  ];
+  
+  $tokens['construction_rental']['status-text'] = [
+    'name' => t('Status Text'),
+    'description' => t('Human-readable status of the rental expiration.'),
+  ];
+  
+  $tokens['construction_rental']['days-text'] = [
+    'name' => t('Days Text'),
+    'description' => t('Human-readable text about days remaining.'),
+  ];
+  
+  return [
+    'types' => $types,
+    'tokens' => $tokens,
+  ];
+}
+
+use Drupal\commerce_invoice\Entity\InvoiceInterface;
+
+/**
+ * Implements hook_commerce_invoice_presave().
+ */
+function construction_rental_commerce_invoice_presave(InvoiceInterface $invoice) {
+  if ($invoice->hasField('field_billing_profile') && $invoice->getOrder()) {
+    $order = $invoice->getOrder();
+
+    if ($order->getBillingProfile()) {
+      $invoice->set('field_billing_profile', $order->getBillingProfile());
+    }
+  }
+}

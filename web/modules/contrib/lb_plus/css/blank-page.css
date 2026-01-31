@@ -1,0 +1,40 @@
+.blank-page-wrapper {
+  margin: 0 auto;
+  margin-top: 1em;
+  width: 80%;
+  padding: 20px;
+  border: 2px dashed #ccc;
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9f9f9;
+}
+
+.blank-page-wrapper i {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: #999;
+}
+
+.blank-page-wrapper:hover {
+  border-color: #999;
+  color: #333;
+}
+
+.blank-page-wrapper:hover i {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .blank-page-wrapper i {
+    font-size: 36px;
+  }
+  .blank-page-wrapper p {
+    font-size: 16px;
+  }
+}

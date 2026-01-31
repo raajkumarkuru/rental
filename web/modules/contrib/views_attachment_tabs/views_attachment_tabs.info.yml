@@ -1,0 +1,13 @@
+type: module
+name: 'Views Attachments as Tabs'
+description: 'Display a views attachment as a tab on a display that supports attachments.'
+package: Views
+core_version_requirement: ^9  || ^10 || ^11
+
+dependencies:
+  - drupal:views
+
+# Information added by Drupal.org packaging script on 2025-03-19
+version: '1.1.2'
+project: 'views_attachment_tabs'
+datestamp: 1742416050

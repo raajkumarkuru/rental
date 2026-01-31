@@ -1,0 +1,46 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - views
+    - commerce_product
+id: construction_rental_products
+label: 'Construction Rental Products'
+module: views
+core: 10.x
+base_table: commerce_product
+display:
+  default:
+    display_plugin: default
+    id: default
+    display_title: 'Defaults'
+    position: 0
+  block_1:
+    display_plugin: block
+    id: block_1
+    display_title: 'Products block'
+    position: 1
+    display_options:
+      title: ''
+      access:
+        type: none
+      cache:
+        type: none
+      fields:
+        title:
+          id: title
+          table: commerce_product_field_data
+          field: title
+          label: 'Product'
+          settings:
+            link_to_entity: true
+      sort_by:
+        created:
+          id: created
+          table: commerce_product_field_data
+          field: created
+          order: DESC
+      items_per_page: 50
+      style:
+        type: table
+        options: { }

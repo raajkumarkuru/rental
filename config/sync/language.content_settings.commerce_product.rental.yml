@@ -1,0 +1,11 @@
+uuid: a4b3d992-3ea5-423b-b978-593c9ca23f1e
+langcode: en-gb
+status: true
+dependencies:
+  config:
+    - commerce_product.commerce_product_type.rental
+id: commerce_product.rental
+target_entity_type_id: commerce_product
+target_bundle: rental
+default_langcode: site_default
+language_alterable: false

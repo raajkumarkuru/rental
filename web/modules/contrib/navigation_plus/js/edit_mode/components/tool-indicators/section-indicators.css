@@ -1,0 +1,38 @@
+.section-indicator {
+  display: none;
+}
+.layout-builder.active {
+  .lb-plus-section:has(.section-indicator .tool-indicator) {
+    position: relative;
+    user-select: none;
+    .section-indicator {
+      position: absolute;
+      /**
+       * The section indicator needs to be above any fixed headers which are
+       * ideally 1261 because the header z-index needs to be higher than
+       * &.ck-toolbar-container in edit+'s ckeditor.css
+       */
+      z-index: 1262;
+      top: calc(calc(28px + 1em) * -1);
+      left: 1px;
+      background-color: var(--navigation-plus-main-color);
+      .tool-indicator {
+        display: flex;
+        align-items: center;
+        height: calc(28px + 1em);
+        padding: 0 .5em;
+        .indicator-icon svg path {
+          fill: white;
+        }
+      }
+    }
+    &:hover {
+      outline: 3px solid var(--navigation-plus-main-color);
+      outline-offset: -3px;
+      .section-indicator {
+        display: flex;
+      }
+    }
+  }
+}
+

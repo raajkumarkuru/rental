@@ -1,0 +1,15 @@
+views.display_extender.views_attachment_tabs_extender:
+  type: views_display_extender
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enable view display as tab'
+    title:
+      type: label
+      label: 'Tab title'
+    weight:
+      type: integer
+      label: 'Tab weight'
+    tokenize:
+      type: boolean
+      label: 'Should replacement tokens be used from the first row'

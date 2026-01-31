@@ -1,0 +1,5 @@
+services:
+  construction_rental.stock_manager:
+    class: Drupal\construction_rental\Services\StockManager
+    arguments: ['@entity_type.manager', '@database']
+

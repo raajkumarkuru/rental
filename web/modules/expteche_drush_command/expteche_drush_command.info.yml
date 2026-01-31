@@ -1,0 +1,5 @@
+name: Expteche Drush Command
+type: module
+description: Create a custom Drush comand Drupal 9
+package: expteche_custom
+core_version_requirement: ^9 || ^10

@@ -1,0 +1,7 @@
+tool:
+  js:
+    js/tools/section-library/behaviors/draggable-section-library-section.js: { attributes: { type: 'module' } }
+    js/tools/section-library/section-library-tool-plugin.js: { attributes: { type: 'module' } }
+  css:
+    theme:
+      js/tools/section-library/section-library.css: {}

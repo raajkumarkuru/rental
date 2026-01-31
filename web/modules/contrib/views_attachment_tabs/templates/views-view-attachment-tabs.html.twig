@@ -1,0 +1,115 @@
+{#
+/**
+ * @file
+ * Theme override for a main view template.
+ *
+ * Available variables:
+ * - attributes: Remaining HTML attributes for the element.
+ * - css_name: A CSS-safe version of the view name.
+ * - css_class: The user-specified classes names, if any.
+ * - header: The optional header.
+ * - footer: The optional footer.
+ * - rows: The results of the view query, if any.
+ * - empty: The content to display if there are no rows.
+ * - tab_navigations: The navigation of the tabs.
+ * - tab_navigations_attributes: The tab navigation wrapper attributes.
+ * - tab_panels: The content to display if there are panels.
+ * - tab_panels_attributes: The panels wrapper attributes.
+ * - pager: The optional pager next/prev links to display.
+ * - exposed: Exposed widget form/info to display.
+ * - feed_icons: Optional feed icons to display.
+ * - more: An optional link to the next page of results.
+ * - title: Title of the view, only used when displaying in the admin preview.
+ * - title_prefix: Additional output populated by modules, intended to be
+ *   displayed in front of the view title.
+ * - title_suffix: Additional output populated by modules, intended to be
+ *   displayed after the view title.
+ * - attachment_before: An optional attachment view to be displayed before the
+ *   view content.
+ * - attachment_after: An optional attachment view to be displayed after the
+ *   view content.
+ * - dom_id: Unique id for every view being printed to give unique class for
+ *   JavaScript.
+ * - wrap_tab_navigations: A flag used to check if the tab navigations list
+ *   should be wrap into a tab nav.
+ * - tab_nav_tag_attributes: The attributes added to the wrapper of tab
+ *   navigations list.
+ *
+ * @see template_preprocess_views_view()
+ */
+#}
+{%
+  set classes = [
+    'view',
+    'view-' ~ id|clean_class,
+    'view-id-' ~ id,
+    'view-display-id-' ~ display_id,
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {% if title %}
+    {{ title }}
+  {% endif %}
+  {{ title_suffix }}
+  {% if header %}
+    <div class="view-header">
+      {{ header }}
+    </div>
+  {% endif %}
+  {% if exposed %}
+    <div class="view-filters">
+      {{ exposed }}
+    </div>
+  {% endif %}
+  {% if attachment_before %}
+    <div class="attachment attachment-before">
+      {{ attachment_before }}
+    </div>
+  {% endif %}
+
+  {% if tab_panels %}
+    <div class="view-content">
+      {% if wrap_tab_navigations %}
+        <nav{{ tab_nav_tag_attributes }}>
+      {% endif %}
+      <ul{{ tab_navigations_attributes }}>
+        {% for tab_navigation in tab_navigations %}
+          <li{{ tab_navigation.wrapper_attributes }}>{{ tab_navigation.content }}</li>
+        {% endfor %}
+      </ul>
+      {% if wrap_tab_navigations %}
+        </nav>
+      {% endif %}
+      <div{{ tab_panels_attributes }}>
+        {% for tab_panel in tab_panels %}
+          <section{{ tab_panel.wrapper_attributes }}>{{ tab_panel.content }}</section>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if pager %}
+    {{ pager }}
+  {% endif %}
+  {% if attachment_after %}
+    <div class="attachment attachment-after">
+      {{ attachment_after }}
+    </div>
+  {% endif %}
+  {% if more %}
+    {{ more }}
+  {% endif %}
+  {% if footer %}
+    <div class="view-footer">
+      {{ footer }}
+    </div>
+  {% endif %}
+  {% if feed_icons %}
+    <div class="feed-icons">
+      {{ feed_icons }}
+    </div>
+  {% endif %}
+</div>

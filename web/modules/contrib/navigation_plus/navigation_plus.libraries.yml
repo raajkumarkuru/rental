@@ -1,0 +1,75 @@
+modes:
+  js:
+    js/navigation-plus.js: { attributes: { type: 'module' }}
+    js/behaviors/right-sidebar-buttons.js: {}
+    js/edit_mode/callbacks/clear-messages.js: {}
+    js/edit_mode/callbacks/edit-mode-message.js: {}
+  css:
+    theme:
+      css/navigation.css: {}
+      css/top-bar.css: {}
+      css/sidebar.css: {}
+
+edit_mode:
+  js:
+    js/edit_mode/dist/edit-mode-app.bundle.js: { attributes: { type: 'module' }}
+    js/edit_mode/components/dropzones/behaviors/dropzone-event-handlers.js: {}
+    js/edit_mode/components/dropzones/wrappers/region-dropzone-wrappers.js: { attributes: { type: 'module' }}
+    js/edit_mode/components/dropzones/wrappers/section-dropzone-wrappers.js: { attributes: { type: 'module' }}
+    js/edit_mode/not-tools/hotkeys.js: { attributes: { type: 'module' }}
+    js/edit_mode/behaviors/clear-notifications.js: {}
+    js/edit_mode/ajax/edit-mode-ajax.js: {}
+    js/edit_mode/behaviors/initial-messages.js: {}
+    js/edit_mode/not-tools/file_upload/behaviors/file-drag.js: { attributes: { type: 'module' }}
+    js/edit-mode-plugin.js: { attributes: { type: 'module' }}
+    js/edit_mode/tools/pointer-tool-plugin.js: { attributes: { type: 'module' }}
+    js/edit_mode/behaviors/scrollable-right-sidebar/scrollable-right-sidebar.js: {}
+    js/edit_mode/components/context-menu/context-menu.js: {}
+    js/edit_mode/settings/hotkey/hotkey-settings.js: {}
+    js/edit_mode/settings/media-file-associations/media-file-association.js: {}
+    js/edit_mode/callbacks/update-markup.js: {}
+    js/edit_mode/utilities/hash.js: {}
+  css:
+    component:
+      js/edit_mode/settings/settings.css: {}
+      js/edit_mode/components/dropzones/drop-zone.css: {}
+      js/edit_mode/settings/hotkey/hotkey-settings.css: {}
+      js/edit_mode/not-tools/file_upload/file-upload.css: {}
+      js/edit_mode/components/context-menu/context-menu.css: {}
+      js/edit_mode/components/tool-indicators/block-indicators.css: {}
+      js/edit_mode/components/tool-indicators/field-indicators.css: {}
+      js/edit_mode/components/tool-indicators/section-indicators.css: {}
+      js/edit_mode/behaviors/scrollable-right-sidebar/scrollable-right-sidebar.css: {}
+      js/edit_mode/settings/media-file-associations/media-file-association-settings.css: {}
+    theme:
+      css/edit-mode.css: {}
+      css/messages.css: {}
+      css/notifications.css: {}
+  dependencies:
+    - core/drupal.dialog.ajax
+    - core/drupal.ajax
+    - core/internal.jquery.form
+    - navigation_plus/modes
+    - navigation_plus/sidebar
+    - dropzonejs/dropzonejs # @todo conditionally add this.
+#    - navigation_plus/debug_cursor
+
+debug_cursor:
+  js:
+    js/edit_mode/utilities/debug-mouse-cursor/debug-mouse-cursor.js: {}
+  css:
+    theme:
+      js/edit_mode/utilities/debug-mouse-cursor/debug-mouse-cursor.css: {}
+
+sidebar:
+  js:
+    js/sidebar/plugins/sidebar-plugin-base.js: {}
+    js/sidebar/sidebar-manager.js: {}
+    js/sidebar/sidebar-tracker.js: {}
+    js/sidebar/plugins/default-sidebar.js: {}
+    js/sidebar/plugins/notifications-sidebar.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.displace
+    - core/once

@@ -1,0 +1,12 @@
+<?php
+
+use Drupal\Core\Extension\Extension;
+
+/**
+ * Implements hook_system_info_alter().
+ */
+function twig_events_system_info_alter(array &$info, Extension $file, $type): void {
+  if ($type === 'theme' && $info['engine'] === 'twig') {
+    $info['engine'] = 'twig_events_engine';
+  }
+}

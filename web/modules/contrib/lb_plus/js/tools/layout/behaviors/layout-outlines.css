@@ -1,0 +1,3 @@
+.lb-plus-section .layout__region.layout-outline {
+  outline: 2px dashed var(--drupal-admin-color-gray-100, #d8dfea);
+}
