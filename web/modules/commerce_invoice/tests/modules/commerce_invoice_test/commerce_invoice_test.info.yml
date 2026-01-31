@@ -1,0 +1,6 @@
+name: Commerce Invoice Test
+type: module
+description: Contains various non-specific things needed in invoice tests.
+package: Testing
+dependencies:
+  - commerce_invoice:commerce_invoice

@@ -1,0 +1,156 @@
+{#
+/**
+ * @file
+ * Template for the invoice.
+ *
+ * Available variables:
+ * - invoice_entity: The invoice entity.
+ * - billing_information: The billing information.
+ * - totals: An array of invoice totals values with the following keys:
+ *   - subtotal: The invoice subtotal price.
+ *   - adjustments: An array of adjustment totals:
+ *     - type: The adjustment type.
+ *     - label: The adjustment label.
+ *     - total: The adjustment total price.
+ *     - weight: The adjustment weight, taken from the adjustment type.
+ *   - total: The invoice total price.
+ *
+ * @ingroup themeable
+ */
+#}
+{% set due_date = invoice_entity.getDueDateTime %}
+
+{# Top header: large INVOICE text left, logo right #}
+<div class="invoice-top" style="width:100%; margin-bottom:20px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div style="flex:1">
+      <h1 style="font-family: Arial, Helvetica, sans-serif; letter-spacing:2px; margin:0; font-size:48px;">{{ 'INVOICE'|t }}</h1>
+    </div>
+    <div style="width:120px; text-align:right;">
+      {% if (logo_url) %}
+        <img src="{{ logo_url }}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;" />
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# Billing information left, invoice metadata right #}
+<div class="invoice-header" style="margin-bottom:18px;">
+  <table style="width:100%; border-collapse:collapse;">
+    <tr>
+      <td style="vertical-align:top; width:60%;">
+        {% if (invoice.billing_information) %}
+          <div class="billing-information" style="font-family: Arial, Helvetica, sans-serif; font-size:12px;">
+            <strong>{{ 'BILL TO'|t }}</strong>
+            <div style="margin-top:6px;">{{ invoice.billing_information }}</div>
+          </div>
+        {% endif %}
+      </td>
+      <td style="vertical-align:top; width:40%; text-align:right;">
+        <table style="float:right; text-align:left; font-family: Arial, Helvetica, sans-serif; font-size:12px;">
+          <tbody>
+          <tr>
+            <td style="padding:4px 8px 4px 0; font-weight:700;">{{ 'Invoice #'|t }}</td>
+            <td style="padding:4px 0;">{{ invoice_entity.getInvoiceNumber }}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px 4px 0; font-weight:700;">{{ 'Invoice Date'|t }}</td>
+            <td style="padding:4px 0;">{{ invoice_entity.getInvoiceDateTime|format_date('html_date') }}</td>
+          </tr>
+          {% if (due_date) %}
+            <tr>
+              <td style="padding:4px 8px 4px 0; font-weight:700;">{{ 'Payment Due Date'|t }}</td>
+              <td style="padding:4px 0;">{{ due_date|format_date('html_date') }}</td>
+            </tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+<div class="invoice-items-container" style="margin-top:10px;">
+  <table class="invoice-items" style="width:100%; border-collapse:collapse; font-family: Arial, Helvetica, sans-serif; font-size:12px;">
+    <thead>
+    <tr style="background:#dceef6; color:#000;">
+      <th style="text-align:left; padding:8px 10px;">{{ 'DESCRIPTION'|t }}</th>
+      <th style="text-align:center; padding:8px 10px; width:80px;">{{ 'QTY'|t }}</th>
+      <th style="text-align:right; padding:8px 10px; width:120px;">{{ 'UNIT PRICE'|t }}</th>
+      <th style="text-align:right; padding:8px 10px; width:120px;">{{ 'TOTAL'|t }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% block invoice_items %}
+      {% for invoice_item in invoice_entity.getItems %}
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:10px 8px; vertical-align:top;">{{ invoice_item.label }}{% if invoice_item.getDescription %}<br/><small style="color:#666;">{{ invoice_item.getDescription }}</small>{% endif %}</td>
+          <td style="text-align:center; padding:10px 8px;">{{ invoice_item.getQuantity|number_format }}</td>
+          <td style="text-align:right; padding:10px 8px;">{{ invoice_item.getUnitPrice|commerce_price_format }}</td>
+          <td style="text-align:right; padding:10px 8px;">{{ invoice_item.getTotalPrice|commerce_price_format }}</td>
+        </tr>
+      {% endfor %}
+    {% endblock %}
+    </tbody>
+  </table>
+</div>
+<div class="invoice-totals-container" style="margin-top:18px; clear:both;">
+  <table style="width:100%; border-collapse:collapse;">
+    <tr>
+      <td style="width:60%; vertical-align:top;">
+        {# Left column reserved for notes or signature; ensure it keeps vertical space #}
+        <div style="min-height:60px;"></div>
+      </td>
+      <td style="width:40%; vertical-align:top;">
+        {# Use a right-aligned table without floats to avoid PDF engine float issues #}
+        <table style="margin-left:auto; text-align:left; font-family: Arial, Helvetica, sans-serif; font-size:12px; width:100%; max-width:320px;">
+          <tbody>
+          <tr>
+            <td style="padding:6px 8px;">{{ 'SUB TOTAL'|t }}</td>
+            <td style="padding:6px 8px; text-align:right;">{{ totals.subtotal|commerce_price_format }}</td>
+          </tr>
+          {% for adjustment in totals.adjustments %}
+            <tr>
+              <td style="padding:6px 8px;">{{ adjustment.label }}</td>
+              <td style="padding:6px 8px; text-align:right;">{{ adjustment.total|commerce_price_format }}</td>
+            </tr>
+          {% endfor %}
+          <tr>
+            <td style="padding:6px 8px;">{{ 'TOTAL TAX'|t }}</td>
+            <td style="padding:6px 8px; text-align:right;">{# If tax is provided in adjustments, it will appear above; else show 0.00 #}
+              {% set tax = (totals.tax is defined) ? totals.tax : null %}
+              {% if tax %}
+                {{ tax|commerce_price_format }}
+              {% else %}
+                0.00
+              {% endif %}
+            </td>
+          </tr>
+          <tr style="font-weight:700; border-top:2px solid #ccc;">
+            <td style="padding:8px 8px;">{{ 'BALANCE DUE'|t }}</td>
+            <td style="padding:8px 8px; text-align:right;">{{ invoice_entity.getTotalPrice|commerce_price_format }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+{# Footer: payment method left, company info right. Put on its own block and avoid floats. #}
+<div style="margin-top:30px; border-top:1px solid #cfcfcf; padding-top:12px; font-family: Arial, Helvetica, sans-serif; font-size:11px; clear:both;">
+  <table style="width:100%; border-collapse:collapse;">
+    <tr>
+      <td style="width:60%; vertical-align:top;">
+        <strong>{{ 'PAYMENT METHOD'|t }}</strong>
+        <div style="margin-top:6px; color:#333;">
+          {{ payment_terms ?: '' }}
+        </div>
+      </td>
+      <td style="width:40%; vertical-align:top; text-align:right;">
+        <div style="display:inline-block; max-width:300px; text-align:right;">
+          <div style="font-weight:700; color:#0b66a3;">{{ 'YOUR COMPANY NAME'|t }}</div>
+          <div style="margin-top:6px; color:#333;">{{ footer_text ?: '' }}</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,44 +1,79 @@
-{# Attach the dashboard library for styles #}
+{#
+  Dashboard template for Construction Rental
+  - Uses Drupal routes (no hardcoded URLs)
+  - Language & subdirectory safe
+  - Permission aware (handled by routes)
+#}
+
 {{ attach_library('construction_rental/dashboard') }}
 
 <div class="cr-dashboard">
-  <div class="cr-header">
+  {# ================= HEADER ================= #}
+  <header class="cr-header">
     <div class="cr-title">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="24" height="24" rx="4" fill="#0b76ef"/>
-        <path d="M7 12h10M7 8h6M7 16h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7 12h10M7 8h6M7 16h4"
+              stroke="#fff" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <h1>{{ title }}</h1>
-      <div class="cr-empty">Overview of products, variants and stock</div>
+
+      <div>
+        <h1>{{ title }}</h1>
+        <div class="cr-empty">
+          Overview of products, variants and stock
+        </div>
+      </div>
     </div>
+
     <div class="cr-actions">
       <div class="cr-controls">
-        <button class="button" onclick="location.href='/admin/content'">Content</button>
-        <button class="button secondary" onclick="location.href='/admin/structure/types'">Manage types</button>
+        <a href="{{ path('system.admin_content') }}" class="button">
+          Content
+        </a>
+
+        <a href="{{ path('entity.node_type.collection') }}"
+           class="button secondary">
+          Manage types
+        </a>
       </div>
     </div>
-  </div>
+  </header>
 
+  {# ================= MAIN GRID ================= #}
   <div class="cr-grid">
-    <div>
+
+    {# ===== PRODUCTS & VARIANTS ===== #}
+    <section>
       <div class="cr-card">
-        <h2 style="margin-top:0;">Products & Variants</h2>
-        {# Render a Views block if provided by the controller. Views machine name expected: 'construction_rental_products' #}
+        <h2 style="margin-top:0;">Products &amp; Variants</h2>
+
         {% if products_view is not null %}
           {{ products_view }}
+        {% else %}
+          <div class="cr-empty">
+            No products found
+          </div>
         {% endif %}
       </div>
-    </div>
+    </section>
 
+    {# ================= SIDEBAR ================= #}
     <aside>
+
+      {# ===== RECENT ORDERS ===== #}
       <div class="cr-card">
         <h3 style="margin-top:0;">Recent Orders</h3>
-        {% if orders|length %}
+
+        {% if orders is not empty %}
           <ul class="cr-order-list">
             {% for o in orders %}
               <li>
                 <strong>#{{ o.order_number }}</strong>
-                <div class="cr-empty">{{ o.customer }} • {{ o.total }} • {{ o.status }}</div>
+                <div class="cr-empty">
+                  {{ o.customer }} • {{ o.total }} • {{ o.status }}
+                </div>
               </li>
             {% endfor %}
           </ul>
@@ -47,13 +82,23 @@
         {% endif %}
       </div>
 
+      {# ===== QUICK ACTIONS ===== #}
       <div class="cr-card">
         <h3 style="margin-top:0;">Quick Actions</h3>
+
         <div class="cr-controls">
-          <button class="button" onclick="window.location='/admin/commerce/products/add'">Add product</button>
-          <button class="button secondary" onclick="window.location='/admin/commerce/products'">All products</button>
+          <a href="{{ path('entity.commerce_product.add_page') }}"
+             class="button">
+            Add product
+          </a>
+
+          <a href="{{ path('entity.commerce_product.collection') }}"
+             class="button secondary">
+            All products
+          </a>
         </div>
       </div>
+
     </aside>
   </div>
 </div>
