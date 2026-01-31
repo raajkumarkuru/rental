@@ -1,0 +1,11 @@
+name: Custom Frontpage for Authenticated users
+type: module
+description: Front page settings
+configure: authenticated_frontpage.settings_form
+package: Custom
+core_version_requirement: ^8 || ^9 || ^10 || ^11
+
+# Information added by Drupal.org packaging script on 2025-12-22
+version: '1.1.1'
+project: 'authenticated_frontpage'
+datestamp: 1766376858

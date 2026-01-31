@@ -1944,6 +1944,57 @@
             "install-path": "../../web/modules/contrib/admin_toolbar"
         },
         {
+            "name": "drupal/authenticated_frontpage",
+            "version": "1.1.1",
+            "version_normalized": "1.1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/authenticated_frontpage.git",
+                "reference": "1.1.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/authenticated_frontpage-1.1.1.zip",
+                "reference": "1.1.1",
+                "shasum": "e195556589ce386ba8a4d97e0f2cd2820876ccc1"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9 || ^10 || ^11"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.1.1",
+                    "datestamp": "1766376854",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "joël_m",
+                    "homepage": "https://www.drupal.org/user/3648224"
+                },
+                {
+                    "name": "rawdreeg",
+                    "homepage": "https://www.drupal.org/user/3518125"
+                }
+            ],
+            "description": "Front page settings",
+            "homepage": "https://www.drupal.org/project/authenticated_frontpage",
+            "support": {
+                "source": "https://git.drupalcode.org/project/authenticated_frontpage"
+            },
+            "install-path": "../../web/modules/contrib/authenticated_frontpage"
+        },
+        {
             "name": "drupal/backup_migrate",
             "version": "5.1.3",
             "version_normalized": "5.1.3.0",
