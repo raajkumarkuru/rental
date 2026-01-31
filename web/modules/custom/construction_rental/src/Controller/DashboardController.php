@@ -57,7 +57,7 @@ class DashboardController extends ControllerBase {
         $view = Views::getView('products_variants');
         if ($view) {
           // Set the display and execute; then build a renderable array.
-          $view->setDisplay('block_1');
+          $view->setDisplay('default');
           $view->preExecute();
           $view->execute();
           $products_view = $view->render();
