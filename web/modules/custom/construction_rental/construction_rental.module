@@ -37,6 +37,7 @@ function construction_rental_theme($existing, $type, $theme, $path) {
       'variables' => [
         'products' => NULL,
         'orders' => NULL,
+        'orders_view' => NULL,
         'title' => NULL,
       ],
   'template' => 'dashboard',
